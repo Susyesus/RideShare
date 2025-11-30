@@ -84,12 +84,18 @@
                             {{ booking.get_status_display }}
                         </span>
                     </div>
-                    {% if booking.status == 'confirmed' %}
-                    <a href="{% url 'cancel_booking' booking.id %}" 
-                    class="btn-cancel"
-                    onclick="return confirm('Are you sure you want to cancel this booking?');">
-                        Cancel Booking
-                    </a>
+                    {% if booking.status == 'confirmed' and booking.ride.status == 'open' or booking.ride.status == 'full' %}
+                        <a href="{% url 'cancel_booking' booking.id %}" 
+                        class="btn-cancel"
+                        onclick="return confirm('Are you sure you want to cancel this booking?');">
+                            Cancel Booking
+                        </a>
+                    {% endif %}
+
+                    {% if booking.ride.status == 'completed' %}
+                        <button class="btn-request" disabled style="opacity: 0.6; background-color: #3b82f6; color: white; border: none;">
+                            <i class="fa-solid fa-flag-checkered"></i> Ride Completed
+                        </button>
                     {% endif %}
         
                 </div>
