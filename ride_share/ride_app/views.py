@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings
+from datetime import datetime
 
 from .forms import PostRideForm, BookRideForm
 from .models import Ride, Booking
@@ -20,7 +21,7 @@ def post_ride(request):
     # Prevent posting if user already has a booking
     active_booking = Booking.objects.filter(
         passenger=request.user,
-        status__in=['confirmed', 'pending']  # adjust if you have other statuses
+        status__in=['confirmed', 'pending']
     ).first()
 
     if active_booking:
@@ -201,25 +202,37 @@ def close_ride(request, ride_id):
 
 @login_required
 def cancel_booking(request, booking_id):
-    """Allow a passenger to cancel their booking"""
     booking = get_object_or_404(Booking, id=booking_id, passenger=request.user)
     ride = booking.ride
 
-    # Optional: prevent cancellation if ride already started
-    if ride.start_date < timezone.now().date():
+    # 1. Time Check Logic
+    ride_datetime = datetime.combine(ride.start_date, ride.start_time)
+    if timezone.is_aware(timezone.now()):
+        ride_datetime = timezone.make_aware(ride_datetime)
+
+    if ride_datetime < timezone.now():
         messages.error(request, "You cannot cancel a ride that has already started.")
         return redirect('my_bookings')
 
-    # Update booking status
+    # 2. Seat Return Logic
+    # Only return the seat if the booking was actually Confirmed (taking up space)
+    if booking.status == 'confirmed':
+        ride.seats_available += booking.num_seats
+        # If ride was full, reopen it
+        if ride.status == 'full':
+            ride.status = 'open'
+        ride.save()
+
+    # 3. Update Status
     booking.status = 'cancelled'
     booking.save()
 
-    # Return seats to the ride
-    ride.seats_available += booking.num_seats
-    # If ride was full, reopen it
-    if ride.status == 'full':
-        ride.status = 'open'
-    ride.save()
+    # 4. Notify Driver (US 4.1 Requirement)
+    Notification.objects.create(
+        user=ride.driver,
+        message=f"{request.user.first_name} cancelled their booking for {ride.destination}.",
+        link="/ride/my-rides/"
+    )
 
     messages.success(request, "Your booking has been cancelled successfully.")
     return redirect('my_bookings')
