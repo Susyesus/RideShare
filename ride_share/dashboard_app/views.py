@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 
 from .models import Notification
 from ride_app.models import Ride
 
+@never_cache
 @login_required
 def dashboard(request):
     upcoming_rides = Ride.objects.filter(status='open').order_by('start_date', 'start_time')

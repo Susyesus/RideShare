@@ -1,4 +1,5 @@
 from .models import Notification
+from .utils import get_user_profile_picture
 
 def notifications(request):
     if request.user.is_authenticated:
@@ -9,5 +10,13 @@ def notifications(request):
         return {
             'unread_notification_count': unread_count,
             'user_notifications': latest_notifications
+        }
+    return {}
+
+def user_profile_picture(request):
+    """Add user's profile picture to all templates."""
+    if request.user.is_authenticated:
+        return {
+            'user_picture': get_user_profile_picture(request.user)
         }
     return {}

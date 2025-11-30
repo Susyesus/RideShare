@@ -54,7 +54,14 @@
         </nav>
         <div class="account">
             <div class="profile">
-                <div class="avatar" aria-hidden="true">{{ user.first_name|default:"S"|slice:":1" }}</div>
+                {% if user_picture %}
+                    <div class="user-avatar" style="background-image: url('{{ user_picture }}')">
+                    </div>
+                {% else %}
+                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), #60a5fa);">
+                        {{ user.first_name|first }}{{ user.last_name|first }}
+                    </div>
+                {% endif %}
                 <div class="details">
                     <div class="name">{{ user.first_name|default:'Student' }} {{ user.last_name|default:'' }}</div>
                     <div class="email">{{ user.email|default:'' }}</div>
