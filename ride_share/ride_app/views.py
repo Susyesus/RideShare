@@ -21,8 +21,18 @@ def post_ride(request):
     # Prevent posting if user already has a booking
     active_booking = Booking.objects.filter(
         passenger=request.user,
-        status__in=['confirmed', 'pending']
+        status__in=['confirmed', 'pending'],
+        ride__status__in=['open', 'full']
     ).first()
+
+    active_ride = Ride.objects.filter(
+        driver=request.user, 
+        status__in=['open', 'full']
+    ).exists()
+    
+    if active_ride:
+        messages.error(request, "You already have an active ride. Please complete or close it first.")
+        return redirect('my_rides')
 
     if active_booking:
         messages.error(
@@ -164,6 +174,11 @@ def complete_ride(request, ride_id):
     if request.user == ride.driver:
         ride.status = 'completed'
         ride.save()
+        
+        # Optional: Auto-update all bookings to 'completed' (or 'closed')
+        # This makes the green badge in "My Bookings" update correctly
+        ride.bookings.filter(status='confirmed').update(status='closed') 
+
         messages.success(request, "Ride marked as completed.")
     
     return redirect('my_rides')
