@@ -31,6 +31,22 @@ body {
 	overflow: hidden;
 }
 
+/* user avatar */
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-size: cover;       /* fill container */
+    background-position: center;  /* center the image */
+    background-repeat: no-repeat;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+
 .container { 
 	display: flex;
 	flex-direction: row;

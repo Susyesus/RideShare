@@ -16,6 +16,11 @@ def login(request):
             user = authenticate(request, username=user_obj.username, password=password)
             if user is not None:
                 auth_login(request, user)
+
+                # Redirect admins to /admin
+                if user.is_staff or user.is_superuser:
+                    return redirect('/admin')
+                    
                 return redirect('dashboard')
             else:
                 error = "Invalid email or password."
