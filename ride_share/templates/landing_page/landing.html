@@ -6,11 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus RideShare - Welcome</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Alert Area */
         .alert-area {
-            position: absolute;
-            margin-bottom: 1.5rem;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 600px;
         }
 
         .alert-message {
@@ -18,9 +24,10 @@
             align-items: center;
             gap: 0.75rem;
             padding: 1rem 1.25rem;
-            border-radius: var(--radius);
+            border-radius: 8px;
             font-weight: 500;
             border: 1px solid;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .alert-message.success {
@@ -34,6 +41,7 @@
             color: #991b1b;
             border-color: #fecaca;
         }
+        
         * {
             box-sizing: border-box;
             margin: 0;
@@ -44,6 +52,53 @@
             font-family: 'Poppins', sans-serif;
             background-color: #f5f5f5;
             min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 18px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            color: #3b82f6; /* Blue color */
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: white;
         }
 
         /* Hero Section */
@@ -51,8 +106,20 @@
             background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
             color: white;
             text-align: center;
-            padding: 80px 20px 100px;
+            padding: 160px 20px 100px;
             position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.03)"/></svg>');
+            background-size: cover;
         }
 
         .hero-section h1 {
@@ -60,6 +127,7 @@
             font-weight: 700;
             margin-bottom: 20px;
             letter-spacing: -0.5px;
+            position: relative;
         }
 
         .hero-section .tagline {
@@ -69,6 +137,7 @@
             max-width: 700px;
             margin: 0 auto 40px;
             color: rgba(255, 255, 255, 0.9);
+            position: relative;
         }
 
         .button-group {
@@ -76,6 +145,7 @@
             gap: 16px;
             justify-content: center;
             flex-wrap: wrap;
+            position: relative;
         }
 
         .btn {
@@ -90,15 +160,15 @@
         }
 
         .btn-primary {
-            background-color: #ffffff;
-            color: #000000;
+            background-color: #3b82f6; /* Blue color */
+            color: white;
             border: none;
         }
 
         .btn-primary:hover {
-            background-color: #f0f0f0;
+            background-color: #2563eb;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         .btn-secondary {
@@ -110,6 +180,34 @@
         .btn-secondary:hover {
             background-color: rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: #ffffff;
+            padding: 60px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 42px;
+            font-weight: 700;
+            color: #3b82f6; /* Blue color */
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
         }
 
         /* Features Section */
@@ -161,15 +259,16 @@
         }
 
         .feature-icon {
-            width: 64px;
-            height: 64px;
-            background: #f5f5f5;
-            border-radius: 12px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb); /* Blue gradient */
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
             font-size: 32px;
+            color: white;
         }
 
         .feature-card h3 {
@@ -185,16 +284,170 @@
             line-height: 1.6;
         }
 
+        /* How It Works Section */
+        .how-it-works {
+            background: #f9f9f9;
+            padding: 80px 20px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 36px;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            font-size: 16px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .steps-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .steps-container::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-card {
+            text-align: center;
+            background: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #3b82f6; /* Blue color */
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 auto 20px;
+        }
+
+        .step-card h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .step-card p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #555657 0%, #252629 100%); 
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .cta-section h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 18px;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.9;
+        }
+
         /* Footer */
         .footer {
             background-color: #1a1a1a;
             color: rgba(255, 255, 255, 0.7);
+            padding: 60px 20px 30px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
             text-align: center;
-            padding: 30px 20px;
-            font-size: 14px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-section {
+                padding: 140px 20px 80px;
+            }
+            
             .hero-section h1 {
                 font-size: 36px;
             }
@@ -213,7 +466,18 @@
                 width: 100%;
             }
 
-            .features-header h2 {
+            .stats-section {
+                gap: 30px;
+                padding: 40px 20px;
+            }
+
+            .stat-number {
+                font-size: 32px;
+            }
+
+            .features-header h2,
+            .section-header h2,
+            .cta-section h2 {
                 font-size: 28px;
             }
 
@@ -221,22 +485,52 @@
                 grid-template-columns: 1fr;
                 gap: 30px;
             }
+
+            .steps-container::before {
+                display: none;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-car logo-icon"></i>
+            Campus RideShare
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="{% url 'login' %}">Sign In</a>
+            <a href="{% url 'register' %}" class="btn btn-primary" style="padding: 10px 24px;">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Alert Area -->
+    {% if messages %}
+    <div class="alert-area" id="alertArea">
+        {% for message in messages %}
+        <div class="alert-message {{ message.tags }}">
+            <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Hero Section -->
     <section class="hero-section">
-        {% if messages %}
-            <div class="alert-area" id="alertArea">
-                {% for message in messages %}
-                <div class="alert-message {{ message.tags }}">
-                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                    <span>{{ message }}</span>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
         <h1>Campus RideShare</h1>
         <p class="tagline">
             Connect with fellow students for safe, affordable, and eco-friendly rides.<br>
@@ -248,8 +542,9 @@
         </div>
     </section>
 
+
     <!-- Features Section -->
-    <section class="features-section">
+    <section id="features" class="features-section">
         <div class="features-header">
             <h2>Why Choose Campus RideShare?</h2>
             <p>Built specifically for students, by students. Safe, affordable, and sustainable transportation.</p>
@@ -257,28 +552,115 @@
         
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">👥</div>
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
                 <h3>Student Community</h3>
                 <p>Connect with verified students from your university. Build friendships while commuting.</p>
             </div>
             
             <div class="feature-card">
-                <div class="feature-icon">🛡️</div>
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
                 <h3>Safe & Secure</h3>
                 <p>Verified student profiles, ratings, and secure communication for peace of mind.</p>
             </div>
             
             <div class="feature-card">
-                <div class="feature-icon">🌱</div>
+                <div class="feature-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
                 <h3>Eco-Friendly</h3>
                 <p>Reduce carbon footprint by sharing rides. Save money while helping the environment.</p>
             </div>
         </div>
     </section>
 
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Get started with Campus RideShare in just four simple steps</p>
+        </div>
+        
+        <div class="steps-container">
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Create Account</h3>
+                    <p>Sign up with your student email and verify your university identity</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Find or Offer Ride</h3>
+                    <p>Post your ride or browse available rides from other students</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Connect & Confirm</h3>
+                    <p>Chat with potential ride partners and confirm details</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Share & Save</h3>
+                    <p>Share your journey and split the costs with your new friends</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2>Ready to Start Your Journey?</h2>
+        <p>Join thousands of students sharing rides and saving money. Sign up today and get your first ride for free!</p>
+        <div class="button-group">
+            <a href="{% url 'register' %}" class="btn btn-primary" style="background: white; color: #030303;">Join Now - It's Free</a>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
-        © 2025 Campus RideShare — All rights reserved.
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Campus RideShare</h3>
+                <p>Connecting students for safer, greener, and more affordable transportation since 2020.</p>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#how-it-works">Get Started</a></li>
+                    <li><a href="{% url 'login' %}">Sign In</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Safety Guidelines</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Contact Us</h3>
+                <ul class="footer-links">
+                    <li><a href="mailto:support@campusrideshare.com">support@campusrideshare.com</a></li>
+                    <li><a href="#">(555) 123-4567</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © 2025 Campus RideShare — All rights reserved.
+        </div>
     </footer>
 </body>
 <script>
@@ -290,7 +672,23 @@
                 alertArea.style.display = 'none';
             }, 5000);
         }
-    });
 
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    });
 </script>
 </html>
