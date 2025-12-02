@@ -1,16 +1,30 @@
 from profile_app.supabase_utils import get_supabase_client
 
 def get_user_profile_picture(user):
+    # Skip if not authenticated
+    if not user or not user.is_authenticated:
+        return None
+
     supabase = get_supabase_client()
+    if supabase is None:
+        return None
 
-    response = supabase.table('profiles') \
-        .select('profile_picture_url') \
-        .eq('user_id', user.id) \
-        .single() \
-        .execute()
+    try:
+        response = (
+            supabase.table("profiles")
+            .select("profile_picture_url")
+            .eq("user_id", user.id)
+            .maybe_single()   # IMPORTANT: prevents crashing when 0 rows
+            .execute()
+        )
 
-    if response.data and response.data.get('profile_picture_url'):
-        return response.data['profile_picture_url']
+        if not response or not response.data:
+            return None
+
+        return response.data.get("profile_picture_url")
+
+    except Exception:
+        return None
 
 # Utility function to attach driver profile pictures
 def attach_driver_profile_pictures(rides):
