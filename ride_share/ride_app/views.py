@@ -25,6 +25,7 @@ def post_ride(request):
         ride__status__in=['open', 'full']
     ).first()
 
+    # Prevent posting if user already has a ride posted
     active_ride = Ride.objects.filter(
         driver=request.user, 
         status__in=['open', 'full']
@@ -81,6 +82,31 @@ def find_rides(request):
 @login_required
 def book_ride(request, ride_id):
     ride = get_object_or_404(Ride, id=ride_id)
+
+    # Prevent posting if user already has a booking
+    active_booking = Booking.objects.filter(
+        passenger=request.user,
+        status__in=['confirmed', 'pending'],
+        ride__status__in=['open', 'full']
+    ).first()
+
+    # Prevent posting if user already has a ride posted
+    active_ride = Ride.objects.filter(
+        driver=request.user, 
+        status__in=['open', 'full']
+    ).exists()
+    
+    if active_ride:
+        messages.error(request, "You already have an active ride. Please complete or close it first.")
+        return redirect('my_rides')
+
+    if active_booking:
+        messages.error(
+            request,
+            "You cannot post a ride while you have an active booking. "
+            "Please cancel or complete your booking first."
+        )
+        return redirect('my_bookings')
     
     if request.method == 'POST':
         form = BookRideForm(request.POST)
@@ -152,7 +178,7 @@ def decline_booking(request, booking_id):
     Notification.objects.create(
         user=booking.passenger,
         message=f"Your booking request to {booking.ride.destination} was declined.",
-        link="/ride/find/"
+        link="/ride/my-bookings/"
     )
 
     messages.info(request, "Booking request declined.")
