@@ -34,7 +34,44 @@
     .btn-accept { background: #10b981; color: white; margin-right: 4px; }
     .btn-decline { background: #ef4444; color: white; }
     .btn-complete { background: #3b82f6; color: white; width: 100%; margin-top: 10px; }
+
+    /* Alert Area */
+    .alert-area {
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-message {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius);
+        font-weight: 500;
+        border: 1px solid;
+    }
+
+    .alert-message.success {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .alert-message.error {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
 </style>
+{% if messages %}
+            <div class="alert-area" id="alertArea">
+                {% for message in messages %}
+                <div class="alert-message {{ message.tags }}">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
 <div class="find-rides-container">
     <div class="page-header">
@@ -97,4 +134,15 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const alertArea = document.getElementById('alertArea');
+    if (alertArea) {
+        setTimeout(() => {
+            alertArea.style.display = 'none';
+        }, 5000);
+        }
+    });
+</script>
 {% endblock %}
