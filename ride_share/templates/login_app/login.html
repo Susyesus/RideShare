@@ -8,9 +8,88 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/login.css' %}" />
     <title>Campus RideShare | Login</title>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 100%, #444444 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Subtle geometric pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.03) 0%, transparent 95%),
+                radial-gradient(circle at 75% 75%, rgba(29, 78, 216, 0.03) 0%, transparent 95%),
+                linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.02) 49%, rgba(255, 255, 255, 0.02) 51%, transparent 91%),
+                linear-gradient(-45deg, transparent 49%, rgba(255, 255, 255, 0.02) 49%, rgba(255, 255, 255, 0.02) 51%, transparent 91%);
+            background-size: 400px 400px, 400px 400px, 60px 60px, 60px 60px;
+            background-position: 0 0, 200px 200px, 0 0, 0 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 80%),
+                radial-gradient(circle at 85% 15%, rgba(29, 78, 216, 0.08) 0%, transparent 80%),
+                radial-gradient(circle at 50% 85%, rgba(37, 99, 235, 0.05) 0%, transparent 80%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        /* Keep your original title position */
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            font-size: 28px;
+            font-weight: 700;
+            z-index: 10;
+        }
+        
+        .title h3 {
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        @keyframes patternMove {s
+            0% {
+                background-position: 0 0, 200px 200px, 0 0, 0 0;
+            }
+            100% {
+                background-position: 400px 400px, 600px 600px, 60px 60px, 60px 60px;
+            }
+        }
+        
+        body::before {
+            animation: patternMove 60s linear infinite;
+        }
+    </style>
 </head>
 <body>
-  <div class="title"><h3>Campus RideShare</h3></div>
+  <div class="title">
+      <h3>Campus RideShare</h3>
+  </div>
     <div class="container">
       <span class="logo">
                 <i class="fa-solid fa-car-side"></i>
@@ -40,7 +119,7 @@
                   {% endfor %}
                 {% for error in form.email.errors %}
                     <p class="error-message">{{ error }}</p>
-                  {% endfor %}
+                {% endfor %}
                 {% if error %}
                   <p class="error-message">{{ error }}</p>
                 {% endif %}
