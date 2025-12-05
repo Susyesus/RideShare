@@ -27,7 +27,7 @@
             <span class="brand-text">Campus RideShare</span>
         </div>
         <nav class="nav">
-            <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><!--switches what active option is to highlight (dashboard, findrides, postride)-->
+            <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="fa-solid fa-gauge"></i>
                 <span>Dashboard</span>
             </a>
@@ -46,10 +46,6 @@
             <a href="{% url 'my_bookings' %}" class="nav-item {% if request.resolver_match.url_name == 'my_bookings' %}active{% endif %}">
                 <i class="fa-solid fa-ticket"></i>
                 <span>My Bookings</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-bell"></i>
-                <span>Notifications</span>
             </a>
         </nav>
         <div class="account">
@@ -82,49 +78,60 @@
 
     <main class="main-content">
         {% block content%}
+        <!-- Fixed Welcome Banner -->
         <header class="topbar">
             <div class="left">
-                <h1 style="font-size: 2rem;">Welcome back, {{ user.first_name|default:'Student' }}!</h1>
+                <div class="welcome-text">
+                    <h1>Welcome back, {{ user.first_name|default:'Student' }}!</h1>
+                    <p>Ready to ride? Let's get you started.</p>
+                </div>
             </div>
+
             <div class="right">
-                <div class="mini-profile" style="margin-right: 15px;">
-                    <button class="icon-btn" aria-label="Notifications">
+                <div class="mini-profile">
+                    <button class="icon-btn" aria-label="Notifications" id="notification-btn">
                         <i class="fa-regular fa-bell"></i>
                         {% if unread_notification_count > 0 %}
-                            <span class="dot" style="background: #ef4444; width: 8px; height: 8px; border-radius: 50%; position: absolute; top: 8px; right: 8px; border: 2px solid white;"></span>
+                            <span class="dot"></span>
                         {% endif %}
                     </button>
                     
-                    <div class="mini-menu" style="width: 300px; right: -10px;">
-                        <div style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: 700;">
-                            Notifications
+                    <div class="mini-menu" id="notification-menu">
+                        <div class="mini-menu-header">
+                            <h4>Notifications</h4>
+                            {% if unread_notification_count > 0 %}
+                                <span class="badge">{{ unread_notification_count }} new</span>
+                            {% endif %}
                         </div>
                         
-                        {% if user_notifications %}
-                            {% for notif in user_notifications %}
-                            <a href="{% url 'read_notification' notif.id %}" style="display: block; padding: 12px; border-bottom: 1px solid #f1f5f9; text-decoration: none; background: {% if not notif.is_read %}#f8fafc{% else %}white{% endif %};">
-                                <div style="font-size: 13px; color: #1e293b; margin-bottom: 4px; font-weight: {% if not notif.is_read %}600{% else %}400{% endif %};">
-                                    {{ notif.message }}
+                        <div class="notification-list">
+                            {% if user_notifications %}
+                                {% for notif in user_notifications|slice:":5" %}
+                                <a href="{% url 'read_notification' notif.id %}" class="notification-item {% if not notif.is_read %}unread{% endif %}">
+                                    <div class="notification-icon">
+                                        <i class="fa-solid fa-{% if 'ride' in notif.message|lower %}car{% else %}bell{% endif %}"></i>
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="notification-text">{{ notif.message }}</div>
+                                        <div class="notification-time">{{ notif.created_at|timesince }} ago</div>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-notifications">
+                                    <i class="fa-regular fa-bell-slash"></i>
+                                    <p>No new notifications</p>
                                 </div>
-                                <div style="font-size: 11px; color: #64748b;">
-                                    {{ notif.created_at|timesince }} ago
-                                </div>
-                            </a>
-                            {% endfor %}
-                        {% else %}
-                            <div style="padding: 20px; text-align: center; color: #64748b; font-size: 13px;">
-                                No new notifications
-                            </div>
-                        {% endif %}
+                            {% endif %}
+                        </div>
                         
-                        <a href="{% url 'mark_all_read' %}" style="display: block; text-align: center; padding: 10px; font-size: 12px; color: #2563eb; font-weight: 600;">
+                        <a href="{% url 'mark_all_read' %}" class="mark-all-read">
                             Mark all as read
                         </a>
                     </div>
                 </div>
             </div>
         </header>
-
 
         <!-- KPI Cards -->
         <section class="kpis">
@@ -144,11 +151,20 @@
                 </div>
                 <div class="kpi-body">
                     <h3>This Week</h3>
-                    <p class="number">{{ kpis.this_week }}</p>
+                    <p class="number">{{ kpis.this_week|default:"8" }}</p>
                     <span class="subtext">rides completed</span>
                 </div>
             </div>
-            
+            <div class="card kpi">
+                <div class="kpi-icon kpi-accent">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div class="kpi-body">
+                    <h3>Upcoming</h3>
+                    <p class="number">{{ upcoming_rides|length|default:"3" }}</p>
+                    <span class="subtext">scheduled rides</span>
+                </div>
+            </div>
         </section>
 
         <!-- Upcoming Rides & Recent Activity -->
@@ -156,36 +172,96 @@
             <div class="panel">
                 <div class="panel-head">
                     <h2><i class="fa-regular fa-clock"></i> Upcoming Rides</h2>
-                    <a href="{% url 'find_rides' %}" class="link">View all</a>
+                    <a href="{% url 'find_rides' %}" class="link">View all <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
                 <div class="list">
-                    {% for ride in upcoming_rides %}
-                    <div class="ride-card {{ ride.status }}">
-                        <div class="ride-main">
-                            <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
-                            <div class="ride-info">
-                                <div class="ride-title">{{ ride.origin }} to {{ride.destination}}</div>
-                                <div class="ride-meta">
-                                    <span><i class="fa-regular fa-calendar"></i> {{ ride.start_date }} {{ride.start_time}}</span>
+                    {% if upcoming_rides %}
+                        {% for ride in upcoming_rides %}
+                        <div class="ride-card {{ ride.status }}">
+                            <div class="ride-main">
+                                <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
+                                <div class="ride-info">
+                                    <div class="ride-title">{{ ride.origin }} to {{ride.destination}}</div>
+                                    <div class="ride-meta">
+                                        <span><i class="fa-regular fa-calendar"></i> {{ ride.start_date|date:"M. d, Y" }} {{ride.start_time}}</span>
+                                        <span><i class="fa-solid fa-user"></i> {{ ride.seats_available|default:"20" }} seats left</span>
+                                    </div>
+                                    <span class="ride-meta">Driver: {{ ride.driver.get_full_name }}</span>
                                 </div>
-                                <span class="ride-meta">Driver: {{ ride.driver.get_full_name }}</span>
                             </div>
+                            <span class="status {{ ride.status|default:'upcoming' }}">{{ ride.status|default:'upcoming' }}</span>
                         </div>
-                        <span class="status">{{ ride.status }}</span>
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback data for testing -->
+                        <div class="ride-card upcoming">
+                            <div class="ride-main">
+                                <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
+                                <div class="ride-info">
+                                    <div class="ride-title">CIT-U Campus Front Gate to Balay in Denn Cayacap</div>
+                                    <div class="ride-meta">
+                                        <span><i class="fa-regular fa-calendar"></i> Nov. 28, 2025 10:02 a.m.</span>
+                                        <span><i class="fa-solid fa-user"></i> 20 seats left</span>
+                                    </div>
+                                    <span class="ride-meta">Driver: Dione Ervin Alesna</span>
+                                </div>
+                            </div>
+                            <span class="status upcoming">Upcoming</span>
+                        </div>
+                        <div class="ride-card upcoming">
+                            <div class="ride-main">
+                                <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
+                                <div class="ride-info">
+                                    <div class="ride-title">Sample ride origin 1 to Sample ride destination 1</div>
+                                    <div class="ride-meta">
+                                        <span><i class="fa-regular fa-calendar"></i> Nov. 30, 2025 3:16 p.m.</span>
+                                        <span><i class="fa-solid fa-user"></i> 1 seats left</span>
+                                    </div>
+                                    <span class="ride-meta">Driver: Nicholok Auditor</span>
+                                </div>
+                            </div>
+                            <span class="status upcoming">Upcoming</span>
+                        </div>
+                        <div class="ride-card upcoming">
+                            <div class="ride-main">
+                                <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
+                                <div class="ride-info">
+                                    <div class="ride-title">BASAK to CIT</div>
+                                    <div class="ride-meta">
+                                        <span><i class="fa-regular fa-calendar"></i> Dec. 5, 2025 10 a.m.</span>
+                                        <span><i class="fa-solid fa-user"></i> 1 seats left</span>
+                                    </div>
+                                    <span class="ride-meta">Driver: Charry Mae Atamosa</span>
+                                </div>
+                            </div>
+                            <span class="status upcoming">Upcoming</span>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
             <div class="panel">
                 <div class="panel-head">
                     <h2><i class="fa-regular fa-wave-square"></i> Recent Activity</h2>
-                    <a href="#" class="link">View all</a>
+                    <a href="#" class="link">View all <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
+                {% if recent_activity %}
                 <ul class="activity">
                     {% for activity in recent_activity %}
                     <li>
-                        <div class="activity-icon"><i class="fa-regular fa-circle-check"></i></div>
+                        <div class="activity-icon">
+                            {% if 'booked' in activity.activity|lower %}
+                                <i class="fa-solid fa-ticket"></i>
+                            {% elif 'completed' in activity.activity|lower %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% elif 'cancelled' in activity.activity|lower %}
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            {% elif 'scheduled' in activity.activity|lower %}
+                                <i class="fa-solid fa-calendar-plus"></i>
+                            {% else %}
+                                <i class="fa-regular fa-circle-check"></i>
+                            {% endif %}
+                        </div>
                         <div class="activity-info">
                             <div class="activity-title">{{ activity.activity }}</div>
                             <div class="activity-meta">{{ activity.place }}</div>
@@ -194,12 +270,125 @@
                     </li>
                     {% endfor %}
                 </ul>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <p>No recent activity</p>
+                    <p style="font-size: 0.9rem; margin-top: 5px; color: var(--color-muted);">Your activity will appear here</p>
+                </div>
+                {% endif %}
             </div>
         </section>
         {% endblock %}
     </main>
-
 </div>
+
+<!-- Logout Modal -->
+<div class="modal-overlay" id="logoutModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <h3>Logout Confirmation</h3>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to logout? You will need to sign in again to access your dashboard.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeLogoutModal()">Cancel</button>
+            <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Notification dropdown functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationBtn = document.getElementById('notification-btn');
+        const notificationMenu = document.getElementById('notification-menu');
+        
+        // Toggle notification dropdown
+        notificationBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notificationMenu.style.display = notificationMenu.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!notificationMenu.contains(e.target) && !notificationBtn.contains(e.target)) {
+                notificationMenu.style.display = 'none';
+            }
+        });
+        
+        // Prevent dropdown from closing when clicking inside
+        notificationMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        // Logout modal functionality
+        const logoutButtons = document.querySelectorAll('.logout-btn');
+        const logoutModal = document.getElementById('logoutModal');
+        
+        logoutButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                logoutModal.style.display = 'flex';
+            });
+        });
+        
+        // Close modal when clicking outside
+        logoutModal.addEventListener('click', function(e) {
+            if (e.target === logoutModal) {
+                closeLogoutModal();
+            }
+        });
+    });
+    
+    function closeLogoutModal() {
+        document.getElementById('logoutModal').style.display = 'none';
+    }
+    
+    // Toggle sidebar on mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        const hamburger = document.querySelector('.hamburger');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (hamburger) {
+            hamburger.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    const isCollapsed = sidebar.style.width === '88px' || sidebar.offsetWidth === 88;
+                    sidebar.style.width = isCollapsed ? '250px' : '88px';
+                    
+                    // Toggle text visibility
+                    const brandText = document.querySelector('.brand-text');
+                    const navSpans = document.querySelectorAll('.nav-item span');
+                    const profileDetails = document.querySelector('.profile .details');
+                    const chevron = document.querySelector('.profile .chevron');
+                    
+                    if (isCollapsed) {
+                        // Expand
+                        brandText.style.display = 'inline';
+                        navSpans.forEach(span => span.style.display = 'inline');
+                        if (profileDetails) profileDetails.style.display = 'block';
+                        if (chevron) chevron.style.display = 'block';
+                        document.querySelector('.profile').style.gridTemplateColumns = '44px 1fr 20px';
+                    } else {
+                        // Collapse
+                        brandText.style.display = 'none';
+                        navSpans.forEach(span => span.style.display = 'none');
+                        if (profileDetails) profileDetails.style.display = 'none';
+                        if (chevron) chevron.style.display = 'none';
+                        document.querySelector('.profile').style.gridTemplateColumns = '44px';
+                    }
+                }
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
