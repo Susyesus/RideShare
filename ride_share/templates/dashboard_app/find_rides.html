@@ -106,7 +106,7 @@
                                     </div>
                                 {% endif %}
                                 <div class="driver-details">
-                                    <div class="driver-name">{{ ride.driver.get_full_name }}</div>
+                                    <div class="driver-name">{{ ride.driver.get_full_name }} || Rating: {{ ride.driver.avg_rating|default:"Not Rated" }}</div>
                                     <div class="ride-meta">
                                         <div class="meta-item">
                                             <i class="fa-regular fa-calendar"></i>

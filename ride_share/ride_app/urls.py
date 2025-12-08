@@ -12,4 +12,5 @@ urlpatterns = [
     path('ride/<int:ride_id>/complete/', views.complete_ride, name='complete_ride'),
     path('close/<int:ride_id>/', views.close_ride, name='close_ride'),
     path('cancel-booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
+    path('submit-booking-rating/', views.submit_booking_rating, name='submit_booking_rating'),
 ]

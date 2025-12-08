@@ -268,3 +268,30 @@ def cancel_booking(request, booking_id):
 
     messages.success(request, "Your booking has been cancelled successfully.")
     return redirect('my_bookings')
+
+@login_required
+def submit_booking_rating(request):
+    if request.method == "POST":
+        booking_id = request.POST.get("booking_id")
+        stars = int(request.POST.get("stars", 0))
+        review = request.POST.get("review", "").strip()
+
+        booking = get_object_or_404(
+            Booking, id=booking_id, passenger=request.user, status__in=['completed', 'closed']
+        )
+
+        if booking.rating_stars:
+            messages.info(request, "You have already rated this driver.")
+            return redirect('my_bookings')
+
+        if stars < 1 or stars > 5:
+            messages.error(request, "Stars must be between 1 and 5.")
+            return redirect('my_bookings')
+
+        booking.rating_stars = stars
+        booking.rating_review = review
+        booking.rated_at = timezone.now()
+        booking.save()
+
+        messages.success(request, "Driver rated successfully!")
+    return redirect('my_bookings')
