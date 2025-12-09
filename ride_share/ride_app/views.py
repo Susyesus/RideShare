@@ -136,20 +136,41 @@ def accept_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     ride = booking.ride
 
+    # Security check - only the driver can accept
     if request.user != ride.driver:
         messages.error(request, "You are not authorized to perform this action.")
         return redirect('my_rides')
 
+    # Update Logic
     if ride.seats_available >= booking.num_seats:
         booking.status = 'accepted'
         booking.save()
         
         # Decrement seats only upon confirmation
         ride.seats_available -= booking.num_seats
+        
+        # Check if ride is now full
         if ride.seats_available == 0:
             ride.status = 'full'
+            
+            # === NEW LOGIC: Auto-decline pending requests ===
+            pending_bookings = ride.bookings.filter(status='pending')
+            
+            # Notify them
+            for pb in pending_bookings:
+                Notification.objects.create(
+                    user=pb.passenger,
+                    message=f"The ride to {ride.destination} is now full. Your pending request was automatically declined.",
+                    link="/ride/my-bookings/"
+                )
+            
+            # Bulk update status
+            pending_bookings.update(status='declined')
+            # ================================================
+
         ride.save()
 
+        # Notify the accepted passenger
         Notification.objects.create(
             user=booking.passenger,
             message=f"Your ride to {ride.destination} has been confirmed!",
@@ -161,7 +182,6 @@ def accept_booking(request, booking_id):
         messages.error(request, "Not enough seats available to confirm this booking.")
 
     return redirect('my_rides')
-
 @login_required
 def decline_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
