@@ -204,12 +204,16 @@ def complete_ride(request, ride_id):
         confirmed_bookings.update(status='completed')
 
         # Notify each passenger
-        for booking in confirmed_bookings:
-            Notification.objects.create(
-                user=booking.passenger,
-                message=f"Your ride to {ride.destination} has been completed!",
-                link="/ride/my-bookings/"
-            )
+        for booking in ride.bookings.filter(status='accepted'):
+        booking.status = 'completed'
+        booking.save()
+
+        Notification.objects.create(
+            user=booking.passenger,
+            message=f"Your ride to {ride.destination} has been completed!",
+            link="/ride/my-bookings/"
+        )
+
     
     messages.success(request, "Ride marked as completed.")
     return redirect('my_rides')
