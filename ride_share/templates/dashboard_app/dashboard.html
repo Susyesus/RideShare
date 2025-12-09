@@ -140,29 +140,26 @@
                     <i class="fa-solid fa-car"></i>
                 </div>
                 <div class="kpi-body">
-                    <h3>Total Rides</h3>
+                    <h3>Available Rides (Open)</h3>
                     <p class="number">{{ rides_count }}</p>
-                    <span class="trend up"><i class="fa-solid fa-arrow-trend-up"></i> +12% from last month</span>
                 </div>
             </div>
             <div class="card kpi">
                 <div class="kpi-icon kpi-secondary">
-                    <i class="fa-solid fa-calendar-week"></i>
+                    <i class="fa-solid fa-star"></i>
                 </div>
                 <div class="kpi-body">
-                    <h3>This Week</h3>
-                    <p class="number">{{ kpis.this_week|default:"8" }}</p>
-                    <span class="subtext">rides completed</span>
+                    <h3>Rating (Driver)</h3>
+                    <p class="number">{{ request.user.avg_rating|default:"Not Rated" }}</p>
                 </div>
             </div>
             <div class="card kpi">
                 <div class="kpi-icon kpi-accent">
-                    <i class="fa-solid fa-hourglass-half"></i>
+                    <i class="fa-solid fa-ticket"></i>
                 </div>
                 <div class="kpi-body">
-                    <h3>Upcoming</h3>
-                    <p class="number">{{ upcoming_rides|length|default:"3" }}</p>
-                    <span class="subtext">scheduled rides</span>
+                    <h3>Succesful Bookings (Passenger)</h3>
+                    <p class="number">{{ kpis.completed_bookings_count }}</p>
                 </div>
             </div>
         </section>
@@ -193,90 +190,12 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <!-- Fallback data for testing -->
-                        <div class="ride-card upcoming">
-                            <div class="ride-main">
-                                <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
-                                <div class="ride-info">
-                                    <div class="ride-title">CIT-U Campus Front Gate to Balay in Denn Cayacap</div>
-                                    <div class="ride-meta">
-                                        <span><i class="fa-regular fa-calendar"></i> Nov. 28, 2025 10:02 a.m.</span>
-                                        <span><i class="fa-solid fa-user"></i> 20 seats left</span>
-                                    </div>
-                                    <span class="ride-meta">Driver: Dione Ervin Alesna</span>
-                                </div>
-                            </div>
-                            <span class="status upcoming">Upcoming</span>
-                        </div>
-                        <div class="ride-card upcoming">
-                            <div class="ride-main">
-                                <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
-                                <div class="ride-info">
-                                    <div class="ride-title">Sample ride origin 1 to Sample ride destination 1</div>
-                                    <div class="ride-meta">
-                                        <span><i class="fa-regular fa-calendar"></i> Nov. 30, 2025 3:16 p.m.</span>
-                                        <span><i class="fa-solid fa-user"></i> 1 seats left</span>
-                                    </div>
-                                    <span class="ride-meta">Driver: Nicholok Auditor</span>
-                                </div>
-                            </div>
-                            <span class="status upcoming">Upcoming</span>
-                        </div>
-                        <div class="ride-card upcoming">
-                            <div class="ride-main">
-                                <div class="ride-icon"><i class="fa-solid fa-route"></i></div>
-                                <div class="ride-info">
-                                    <div class="ride-title">BASAK to CIT</div>
-                                    <div class="ride-meta">
-                                        <span><i class="fa-regular fa-calendar"></i> Dec. 5, 2025 10 a.m.</span>
-                                        <span><i class="fa-solid fa-user"></i> 1 seats left</span>
-                                    </div>
-                                    <span class="ride-meta">Driver: Charry Mae Atamosa</span>
-                                </div>
-                            </div>
-                            <span class="status upcoming">Upcoming</span>
+                        <div class="empty-rides-state">
+                            <i class="fa-solid fa-road empty-icon"></i>
+                            <h3>No Upcoming Rides</h3>
                         </div>
                     {% endif %}
                 </div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-head">
-                    <h2><i class="fa-regular fa-wave-square"></i> Recent Activity</h2>
-                    <a href="#" class="link">View all <i class="fa-solid fa-arrow-right"></i></a>
-                </div>
-                {% if recent_activity %}
-                <ul class="activity">
-                    {% for activity in recent_activity %}
-                    <li>
-                        <div class="activity-icon">
-                            {% if 'booked' in activity.activity|lower %}
-                                <i class="fa-solid fa-ticket"></i>
-                            {% elif 'completed' in activity.activity|lower %}
-                                <i class="fa-solid fa-circle-check"></i>
-                            {% elif 'cancelled' in activity.activity|lower %}
-                                <i class="fa-solid fa-circle-xmark"></i>
-                            {% elif 'scheduled' in activity.activity|lower %}
-                                <i class="fa-solid fa-calendar-plus"></i>
-                            {% else %}
-                                <i class="fa-regular fa-circle-check"></i>
-                            {% endif %}
-                        </div>
-                        <div class="activity-info">
-                            <div class="activity-title">{{ activity.activity }}</div>
-                            <div class="activity-meta">{{ activity.place }}</div>
-                        </div>
-                        <span class="time">{{ activity.time }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <div class="empty-state">
-                    <i class="fa-regular fa-calendar-check"></i>
-                    <p>No recent activity</p>
-                    <p style="font-size: 0.9rem; margin-top: 5px; color: var(--color-muted);">Your activity will appear here</p>
-                </div>
-                {% endif %}
             </div>
         </section>
         {% endblock %}
