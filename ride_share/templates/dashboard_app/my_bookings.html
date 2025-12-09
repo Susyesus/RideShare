@@ -43,24 +43,22 @@
 <div class="find-rides-container">
     <!-- Page Header -->
     <div class="page-header">
-        <h1>
-            <i class="fa-solid fa-bookmark"></i>
-            My Bookings
-        </h1>
+        <div class="header-content">
+            <h1>
+                <i class="fa-solid fa-bookmark" style="color: #000;"></i>
+                My Bookings
+            </h1>
+            <span class="results-count">
+                {% if bookings %}
+                    Showing {{ bookings|length }} booking{{ bookings|length|pluralize }}
+                {% else %}
+                    No bookings yet
+                {% endif %}
+            </span>
+        </div>
         <p>View all your ride bookings and their status.</p>
     </div>
 
-    <!-- Results Header -->
-    <div class="results-header">
-        <h2>Your Bookings</h2>
-        <span class="results-count" id="resultsCount">
-            {% if bookings %}
-                Showing {{ bookings|length }} booking{{ bookings|length|pluralize }}
-            {% else %}
-                No bookings yet
-            {% endif %}
-        </span>
-    </div>
 
     <!-- Bookings List -->
     <div class="rides-grid" id="bookingsGrid">
@@ -126,9 +124,6 @@
                     {% endif %}
 
                     {% if booking.ride.status == 'completed' %}
-                        <button class="btn-request" disabled style="opacity: 0.6; background-color: #3b82f6; color: white; border: none;">
-                            <i class="fa-solid fa-flag-checkered"></i> Ride Completed
-                        </button>
                         {% if not booking.rating_stars %}
                         <button class="btn-rate openModalBtn" data-booking-id="{{ booking.id }}">
                             Rate Driver
