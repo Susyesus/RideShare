@@ -199,7 +199,7 @@ def complete_ride(request, ride_id):
         ride.save()
         
         # Get all accepted bookings
-        confirmed_bookings = ride.bookings.filter(status='accepted')
+        confirmed_bookings = ride.bookings.filter(status='ongoing')
 
         # Update booking statuses
         confirmed_bookings.update(status='completed')
@@ -209,11 +209,11 @@ def complete_ride(request, ride_id):
             booking.status = 'completed'
             booking.save()
 
-        Notification.objects.create(
-            user=booking.passenger,
-            message=f"Your ride to {ride.destination} has been completed!",
-            link="/ride/my-bookings/"
-        )
+            Notification.objects.create(
+                user=booking.passenger,
+                message=f"Your ride to {ride.destination} has been completed!",
+                link="/ride/my-bookings/"
+            )
 
     
     messages.success(request, "Ride marked as completed.")
@@ -325,3 +325,45 @@ def submit_booking_rating(request):
 
         messages.success(request, "Driver rated successfully!")
     return redirect('my_bookings')
+
+@login_required
+def start_ride(request, ride_id):
+    ride = get_object_or_404(Ride, id=ride_id)
+
+    # Only the driver can start the ride
+    if ride.driver != request.user:
+        messages.error(request, "You can only start your own rides.")
+        return redirect('my_rides')
+
+    # Prevent starting before scheduled time
+    ride_datetime = datetime.combine(ride.start_date, ride.start_time)
+    if timezone.is_naive(ride_datetime):
+        ride_datetime = timezone.make_aware(ride_datetime)
+
+    if timezone.now() < ride_datetime:
+        messages.error(request, "You cannot start the ride before its scheduled time.")
+        return redirect('my_rides')
+
+    # Only allow starting if ride is open or full
+    if ride.status not in ['open', 'full']:
+        messages.error(request, f"Cannot start a ride with status '{ride.status}'.")
+        return redirect('my_rides')
+
+    # Update ride status
+    ride.status = 'ongoing'
+    ride.save()
+
+    # Update all accepted bookings to 'ongoing' and notify passengers
+    accepted_bookings = ride.bookings.filter(status='accepted')
+    for booking in accepted_bookings:
+        booking.status = 'ongoing'
+        booking.save()
+
+        # Send notification
+        Notification.objects.create(
+            user=booking.passenger,
+            message=f"Your ride from {ride.origin} to {ride.destination} has started!"
+        )
+
+    messages.success(request, "Ride started successfully. Passengers have been notified.")
+    return redirect('my_rides')
