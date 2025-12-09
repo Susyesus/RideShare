@@ -104,12 +104,20 @@
                 </div>
 
                 <div class="ride-actions">
-                    <div class="seats-available">
-                        <span class="status {% if booking.status == 'confirmed' %}confirmed{% elif booking.status == 'pending' %}pending{% else %}cancelled{% endif %}">
+                        <span class="status 
+                        {% if booking.status == 'accepted' %}
+                            confirmed
+                        {% elif booking.status == 'completed' %}
+                            completed
+                        {% elif booking.status == 'pending' %}
+                            pending
+                        {% elif booking.status == 'cancelled' %}
+                            cancelled
+                        {% endif %}
+                    ">
                             {{ booking.get_status_display }}
                         </span>
-                    </div>
-                    {% if booking.status == 'confirmed' and booking.ride.status == 'open' or booking.ride.status == 'full' %}
+                    {% if booking.ride.status == 'open' or booking.ride.status == 'full' %}
                         <a href="{% url 'cancel_booking' booking.id %}" 
                         class="btn-cancel"
                         onclick="return confirm('Are you sure you want to cancel this booking?');">

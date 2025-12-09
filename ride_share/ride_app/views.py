@@ -21,14 +21,14 @@ def post_ride(request):
     # Prevent posting if user already has a booking
     active_booking = Booking.objects.filter(
         passenger=request.user,
-        status__in=['confirmed', 'pending'],
+        status__in=['accepted', 'pending','ongoing'],
         ride__status__in=['open', 'full']
     ).first()
 
     # Prevent posting if user already has a ride posted
     active_ride = Ride.objects.filter(
         driver=request.user, 
-        status__in=['open', 'full']
+        status__in=['open', 'full', 'ongoing']
     ).exists()
     
     if active_ride:
@@ -86,14 +86,14 @@ def book_ride(request, ride_id):
     # Prevent posting if user already has a booking
     active_booking = Booking.objects.filter(
         passenger=request.user,
-        status__in=['confirmed', 'pending'],
+        status__in=['accepted', 'pending','ongoing'],
         ride__status__in=['open', 'full']
     ).first()
 
     # Prevent posting if user already has a ride posted
     active_ride = Ride.objects.filter(
         driver=request.user, 
-        status__in=['open', 'full']
+        status__in=['open', 'full', 'ongoing']
     ).exists()
     
     if active_ride:
@@ -142,7 +142,7 @@ def accept_booking(request, booking_id):
 
     # Update Logic
     if ride.seats_available >= booking.num_seats:
-        booking.status = 'confirmed'
+        booking.status = 'accepted'
         booking.save()
         
         # Decrement seats only upon confirmation
@@ -192,12 +192,21 @@ def complete_ride(request, ride_id):
         ride.status = 'completed'
         ride.save()
         
-        # Optional: Auto-update all bookings to 'completed' (or 'closed')
-        # This makes the green badge in "My Bookings" update correctly
-        ride.bookings.filter(status='confirmed').update(status='closed') 
+        # Get all accepted bookings
+        confirmed_bookings = ride.bookings.filter(status='accepted')
 
-        messages.success(request, "Ride marked as completed.")
+        # Update booking statuses
+        confirmed_bookings.update(status='completed')
+
+        # Notify each passenger
+        for booking in confirmed_bookings:
+            Notification.objects.create(
+                user=booking.passenger,
+                message=f"Your ride to {ride.destination} has been completed!",
+                link="/ride/my-bookings/"
+            )
     
+    messages.success(request, "Ride marked as completed.")
     return redirect('my_rides')
 
 @login_required
