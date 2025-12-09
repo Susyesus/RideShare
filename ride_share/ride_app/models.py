@@ -17,7 +17,6 @@ class Ride(models.Model):
     seats_available = models.IntegerField(default=1)
     start_date = models.DateField()
     start_time = models.TimeField()
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # default 0
     remarks = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
 

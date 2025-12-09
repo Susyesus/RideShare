@@ -1,164 +1,153 @@
 {% extends 'dashboard_app/dashboard.html' %}
 {% load static %}
 
-    {% block title %}Find Rides{% endblock %}
-    {% block content %}
-    <link rel="stylesheet" href="{% static 'css/find_rides.css' %}">
-    {% if messages %}
-            <div class="alert-area" id="alertArea">
-                {% for message in messages %}
-                <div class="alert-message {{ message.tags }}">
-                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                    <span>{{ message }}</span>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-        <div class="find-rides-container">
-            <!-- Page Header -->
-            <div class="page-header">
-                <h1>
-                    <i class="fa-solid fa-magnifying-glass-location"></i>
-                    Find Rides
-                </h1>
-                <p>Search for available rides and connect with fellow students heading your way.</p>
-            </div>
+{% block title %}Find Rides{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/find_rides.css' %}">
+{% if messages %}
+    <div class="alert-area" id="alertArea">
+        {% for message in messages %}
+        <div class="alert-message {{ message.tags }}">
+            <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
-            <!-- Search Section -->
-            <div class="search-card">
-                <form id="searchForm" class="search-form" method="get">
-                    <div class="search-group">
-                        <label for="searchPickup">Pickup Location</label>
-                        <input 
-                            type="text" 
-                            id="searchPickup" 
-                            class="search-input" 
-                            placeholder="e.g., Upper Greenbelt"
-                            name="origin"
-                            value="{{ request.GET.origin }}"
-                        >
-                    </div>
+<div class="find-rides-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>
+            <i class="fa-solid fa-magnifying-glass-location"></i>
+            Find Rides
+        </h1>
+        <p>Search for available rides and connect with fellow students heading your way.</p>
+    </div>
 
-                    <div class="search-group">
-                        <label for="searchDestination">Destination</label>
-                        <input 
-                            type="text" 
-                            id="searchDestination" 
-                            class="search-input" 
-                            placeholder="e.g., CIT-U Front Gate"
-                            name="destination"
-                            value="{{ request.GET.destination }}"
-                        >
-                    </div>
-
-                    <div class="search-group">
-                        <label for="searchDate">Date</label>
-                        <input 
-                            type="date" 
-                            id="searchDate" 
-                            class="search-input"
-                            name="date"
-                            value="{{ request.GET.date }}"
-                        >
-                    </div>
-
-                    <!-- <div class="search-group">
-                        <label for="searchVehicle">Vehicle Type</label>
-                        <select id="searchVehicle" class="search-select">
-                            <option value="">All Vehicles</option>
-                            <option value="car">Car</option>
-                            <option value="motorcycle">Motorcycle</option>
-                        </select>
-                    </div> -->
-
-                    <button type="submit" class="btn-search">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        Search
-                    </button>
-                </form>
+    <!-- Search Section -->
+    <div class="search-card">
+        <form id="searchForm" class="search-form" method="get">
+            <div class="search-group">
+                <label for="searchPickup">Pickup Location</label>
+                <input 
+                    type="text" 
+                    id="searchPickup" 
+                    class="search-input" 
+                    placeholder="e.g., Upper Greenbelt"
+                    name="origin"
+                    value="{{ request.GET.origin }}"
+                >
             </div>
 
-            <!-- Results Header -->
-            <div class="results-header">
-                <h2>Available Rides</h2>
-                <span class="results-count" id="resultsCount">
-                    {% if rides %}
-                    Showing {{rides|length}} rides 
-                    {% else %}
-                    No rides found
-                    {% endif %}</span>
+            <div class="search-group">
+                <label for="searchDestination">Destination</label>
+                <input 
+                    type="text" 
+                    id="searchDestination" 
+                    class="search-input" 
+                    placeholder="e.g., CIT-U Front Gate"
+                    name="destination"
+                    value="{{ request.GET.destination }}"
+                >
             </div>
 
-            <!-- Rides Grid -->
-            <div class="rides-grid" id="ridesGrid">
-                <!-- Ride Card -->
-                {% if rides %}
-                    {% for ride in rides %}
-                    <div class="ride-card">
-                        <div class="ride-info">
-                            <div class="ride-header">
-                                {% if ride.driver_pic %}
-                                    <div class="driver-avatar" style="background-image: url('{{ ride.driver_pic }}')">
-                                    </div>
-                                {% else %}
-                                    <div class="driver-avatar" style="background: linear-gradient(135deg, var(--primary), #60a5fa);">
-                                        {{ ride.driver.first_name|first }}{{ ride.driver.last_name|first }}
-                                    </div>
-                                {% endif %}
-                                <div class="driver-details">
-                                    <div class="driver-name">{{ ride.driver.get_full_name }} || Rating: {{ ride.driver.avg_rating|default:"Not Rated" }}</div>
-                                    <div class="ride-meta">
-                                        <div class="meta-item">
-                                            <i class="fa-regular fa-calendar"></i>
-                                            <span>{{ride.start_date}}</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <i class="fa-regular fa-clock"></i>
-                                            <span>{{ride.start_time}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="ride-route">
-                                <div class="location">
-                                    <span class="location-label">From</span>
-                                    <span class="location-name">{{ride.origin}}</span>
-                                </div>
-                                <i class="fa-solid fa-arrow-right route-arrow"></i>
-                                <div class="location">
-                                    <span class="location-label">To</span>
-                                    <span class="location-name">{{ride.destination}}</span>
-                                </div>
-                            </div>
-
-
-                            <div class="ride-remarks">
-                                <span class="location-label">Remarks</span>
-                                {{ride.remarks}}
-                            </div>
-
-                        </div>
-
-                        <div class="ride-actions">
-                            <div class="ride-remarks">
-                                    <span class="location-label">Price</span>
-                                    PHP {{ride.price}}
-                                </div>
-                            <div class="seats-available">
-                                <i class="fa-solid fa-user-group"></i>
-                                <span>{{ride.seats_available}} seats left</span>
-                            </div>
-                            <a href="{% url 'book_ride' ride.id %}" class="btn-request">
-                                <i class="fa-solid fa-paper-plane"></i>
-                                Request Ride
-                            </a>
-                        </div>
-                    </div>
-                {% endfor %}
+            <div class="search-group">
+                <label for="searchDate">Date</label>
+                <input 
+                    type="date" 
+                    id="searchDate" 
+                    class="search-input"
+                    name="date"
+                    value="{{ request.GET.date }}"
+                >
             </div>
+
+            <button type="submit" class="btn-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Results Header -->
+    <div class="results-header">
+        <h2>Available Rides</h2>
+        <span class="results-count" id="resultsCount">
+            {% if rides %}
+                Showing {{ rides|length }} ride{{ rides|length|pluralize }}
             {% else %}
-            <!-- No Results Message (Hidden by default) -->
+                No rides found
+            {% endif %}
+        </span>
+    </div>
+
+    <!-- Rides Grid -->
+    <div class="rides-grid" id="ridesGrid">
+        {% if rides %}
+            {% for ride in rides %}
+            <div class="ride-card">
+                <div class="ride-info">
+                    <div class="ride-header">
+                        {% if ride.driver_pic %}
+                            <div class="driver-avatar" style="background-image: url('{{ ride.driver_pic }}')"></div>
+                        {% else %}
+                            <div class="driver-avatar" style="background: linear-gradient(135deg, var(--primary), #60a5fa);">
+                                {{ ride.driver.first_name|first }}{{ ride.driver.last_name|first }}
+                            </div>
+                        {% endif %}
+                        <div class="driver-details">
+                            <div class="driver-name">{{ ride.driver.get_full_name }}</div>
+                            <div class="driver-rating">
+                                <i class="fa-solid fa-star"></i>
+                                {{ ride.driver.avg_rating|default:"Not Rated" }}
+                            </div>
+                            <div class="ride-meta">
+                                <div class="meta-item">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <span>{{ ride.start_date }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span>{{ ride.start_time }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ride-route">
+                        <div class="location">
+                            <span class="location-label">From</span>
+                            <span class="location-name">{{ ride.origin }}</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right route-arrow"></i>
+                        <div class="location">
+                            <span class="location-label">To</span>
+                            <span class="location-name">{{ ride.destination }}</span>
+                        </div>
+                    </div>
+
+                    {% if ride.remarks %}
+                    <div class="ride-remarks">
+                        <span class="location-label">Remarks</span>
+                        <div class="remarks-content">{{ ride.remarks }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="ride-actions">
+                    <div class="seats-available">
+                        <i class="fa-solid fa-user-group"></i>
+                        <span>{{ ride.seats_available }} seat{{ ride.seats_available|pluralize }} left</span>
+                    </div>
+                    <a href="{% url 'book_ride' ride.id %}" class="btn-request">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Request Ride
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
             <div class="no-results" id="noResults">
                 <div class="no-results-icon">
                     <i class="fa-regular fa-face-frown"></i>
@@ -166,44 +155,23 @@
                 <h3>No Rides Available</h3>
                 <p>We couldn't find any rides matching your search criteria. Try adjusting your filters or check back later.</p>
             </div>
-            {% endif %}
-        </div>
-        <script>
+        {% endif %}
+    </div>
+</div>
+
+<script>
     // Set minimum date to today
     const dateInput = document.getElementById('searchDate');
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
 
-    // // Search form handler (placeholder for future backend integration)
-    // document.getElementById('searchForm').addEventListener('submit', function(e) {
-    //     // e.preventDefault();
-        
-    //     // Placeholder: In a real app, this would filter results
-    //     console.log('Search submitted');
-        
-    //     // Example: Show no results (toggle for demonstration)
-    //     // Uncomment to test no results state:
-    //     // document.getElementById('ridesGrid').style.display = 'none';
-    //     // document.getElementById('noResults').classList.add('show');
-    //     // document.getElementById('resultsCount').textContent = 'No rides found';
-    // });
-
-    // // Request ride button handlers
-    // // document.querySelectorAll('.btn-request').forEach(button => {
-    // //     button.addEventListener('click', function() {
-    // //         // Placeholder for future backend integration
-    // //         alert('Ride request feature coming soon!');
-    // //     });
-    // // });
-
     document.addEventListener('DOMContentLoaded', function() {
-    const alertArea = document.getElementById('alertArea');
-    if (alertArea) {
-        setTimeout(() => {
-            alertArea.style.display = 'none';
-        }, 5000);
+        const alertArea = document.getElementById('alertArea');
+        if (alertArea) {
+            setTimeout(() => {
+                alertArea.style.display = 'none';
+            }, 5000);
         }
     });
 </script>
-    {% endblock %}
-
+{% endblock %}
