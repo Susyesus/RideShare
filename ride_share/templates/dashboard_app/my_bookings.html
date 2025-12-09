@@ -102,15 +102,17 @@
                 </div>
 
                 <div class="ride-actions">
-                        <span class="status 
+                        <span class="status" 
                         {% if booking.status == 'accepted' %}
-                            confirmed
+                            style="color: #065f46;"
                         {% elif booking.status == 'completed' %}
-                            completed
+                            style="color: #1e40af;"
                         {% elif booking.status == 'pending' %}
-                            pending
+                            style="color: #92400e;"
                         {% elif booking.status == 'cancelled' %}
-                            cancelled
+                            style="color: #991b1b;"
+                        {% elif booking.status == 'closed' %}
+                            style="color: #374151;"
                         {% endif %}
                     ">
                             {{ booking.get_status_display }}
@@ -124,16 +126,19 @@
                     {% endif %}
 
                     {% if booking.ride.status == 'completed' %}
+                    <!-- Only show rating if booking was accepted (not declined/cancelled) -->
+                    {% if booking.status == 'accepted' or booking.status == 'completed' %}
                         {% if not booking.rating_stars %}
                         <button class="btn-rate openModalBtn" data-booking-id="{{ booking.id }}">
                             Rate Driver
                         </button>
                         {% else %}
                         <button class="btn-rate" disabled style="opacity: 0.6; background-color: #10b981; color: white; border: none;">
-                            <i class="fa-solid fa-star"></i> Rated {{ booking.rating_stars }}   
+                            <i class="fa-solid fa-star"></i> Rated {{ booking.rating_stars }}
+                        </button>
                         {% endif %}
-                        
                     {% endif %}
+                {% endif %} 
         
                 </div>
             </div>
