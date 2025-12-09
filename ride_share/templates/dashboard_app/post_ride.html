@@ -116,26 +116,89 @@
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. SELECT ELEMENTS
+    // IMPORTANT: Ensure your Django form renders these IDs. 
+    // If not, change these to 'id_start_date' and 'id_start_time'
+    const dateInput = document.getElementById('rideDate') || document.querySelector('[name="start_date"]');
+    const timeInput = document.getElementById("rideTime") || document.querySelector('[name="start_time"]');
+    const alertArea = document.getElementById('alertArea');
 
-    // Form submission handler (placeholder for future backend integration)
+    // 2. GET LOCAL DATE (Fixes timezone issues)
+    const now = new Date();
+    const todayStr = now.getFullYear() + '-' +
+                     String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                     String(now.getDate()).padStart(2, '0');
+
+    // Set minimum date to today
+    if(dateInput) dateInput.setAttribute('min', todayStr);
+
+    // 3. VALIDATION FUNCTION
+    function validateTime() {
+        if (!dateInput || !timeInput) return; // Safety check
+
+        const selectedDate = dateInput.value;
+        const currentNow = new Date();
+        
+        // Only check if the date is TODAY
+        if (selectedDate === todayStr) {
+            const currentHour = currentNow.getHours();
+            const currentMinute = currentNow.getMinutes();
+
+            // Format min time for HTML attribute
+            const pad = n => n.toString().padStart(2, '0');
+            const minTime = `${pad(currentHour)}:${pad(currentMinute)}`;
+            
+            // Update the input's restriction
+            timeInput.min = minTime;
+
+            // Check if user already picked a past time
+            if (timeInput.value) {
+                const [selHour, selMinute] = timeInput.value.split(":").map(Number);
+                
+                if (selHour < currentHour || (selHour === currentHour && selMinute < currentMinute)) {
+                    // Reset value and warn
+                    timeInput.value = ""; 
+                    alert("You cannot select a time in the past.");
+                }
+            }
+        } else {
+            // Future date: remove restrictions
+            timeInput.removeAttribute("min");
+        }
+    }
+
+    // 4. EVENT LISTENERS (The Real-Time Fix)
+    if(dateInput) dateInput.addEventListener("change", validateTime);
+    if(timeInput) timeInput.addEventListener("change", validateTime);
+    
+    // Run once on load in case data is pre-filled
+    validateTime();
+
+    // 5. SUBMIT HANDLER (Double Check)
     document.getElementById('postRideForm').addEventListener('submit', function(e) {
-        // Set minimum date to today
-        const dateInput = document.getElementById('rideDate');
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.setAttribute('min', today);
+        if (dateInput.value === todayStr) {
+            const currentNow = new Date();
+            const currentHour = currentNow.getHours();
+            const currentMinute = currentNow.getMinutes();
+            
+            if (timeInput.value) {
+                const [selHour, selMinute] = timeInput.value.split(":").map(Number);
+                if (selHour < currentHour || (selHour === currentHour && selMinute < currentMinute)) {
+                    e.preventDefault(); 
+                    alert("Please select a valid future time.");
+                    return;
+                }
+            }
+        }
 
-        const alertArea = document.getElementById('alertArea');
         if (alertArea) {
         setTimeout(() => {
             alertArea.style.display = 'none';
         }, 5000);
         }
-  
-        // Reset form
-        this.reset();
-        
-        // Scroll to top to show alert
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // window.scrollTo({ top: 0, behavior: 'smooth' }); // Optional
     });
+});
 </script>
 {% endblock %}

@@ -115,14 +115,19 @@
                             style="color: #374151;"
                         {% endif %}
                     ">
-                            {{ booking.get_status_display }}
-                        </span>
+                        {{ booking.get_status_display }}
+                    </span>
+
                     {% if booking.ride.status == 'open' or booking.ride.status == 'full' %}
-                        <a href="{% url 'cancel_booking' booking.id %}" 
-                        class="btn-cancel"
-                        onclick="return confirm('Are you sure you want to cancel this booking?');">
-                            Cancel Booking
-                        </a>
+                        
+                        {% if booking.status == 'pending' %}
+                            <a href="{% url 'cancel_booking' booking.id %}" 
+                            class="btn-cancel"
+                            onclick="return confirm('Are you sure you want to cancel this booking request?');">
+                                Cancel Request
+                            </a>
+                        {% endif %}
+                        
                     {% endif %}
 
                     {% if booking.ride.status == 'completed' %}
@@ -132,6 +137,11 @@
                         <button class="btn-rate openModalBtn" data-booking-id="{{ booking.id }}">
                             Rate Driver
                         </button>
+                        
+                        {% if not booking.rating_stars %}
+                            <button class="btn-rate openModalBtn" data-booking-id="{{ booking.id }}">
+                                Rate Driver
+                            </button>
                         {% else %}
                         <button class="btn-rate" disabled style="opacity: 0.6; background-color: #10b981; color: white; border: none;">
                             <i class="fa-solid fa-star"></i> Rated {{ booking.rating_stars }}
