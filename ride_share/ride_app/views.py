@@ -135,12 +135,10 @@ def accept_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     ride = booking.ride
 
-    # US 4.2: Security check - only the driver can accept
     if request.user != ride.driver:
         messages.error(request, "You are not authorized to perform this action.")
         return redirect('my_rides')
 
-    # Update Logic
     if ride.seats_available >= booking.num_seats:
         booking.status = 'accepted'
         booking.save()
@@ -151,7 +149,6 @@ def accept_booking(request, booking_id):
             ride.status = 'full'
         ride.save()
 
-        # US 4.1: Notify passenger when booking is confirmed
         Notification.objects.create(
             user=booking.passenger,
             message=f"Your ride to {ride.destination} has been confirmed!",
@@ -188,6 +185,14 @@ def decline_booking(request, booking_id):
 def complete_ride(request, ride_id):
     ride = get_object_or_404(Ride, id=ride_id)
 
+    ride_datetime = datetime.datetime.combine(ride.start_date, ride.start_time)
+    if timezone.is_aware(timezone.now()):
+        ride_datetime = timezone.make_aware(ride_datetime)
+
+    if timezone.now() < ride_datetime:
+        messages.error(request, "You cannot complete a ride that hasn't started yet.")
+        return redirect('my_rides')
+
     if request.user == ride.driver:
         ride.status = 'completed'
         ride.save()
@@ -222,8 +227,8 @@ def my_rides(request):
     return render(request, "dashboard_app/my_rides.html", {'rides': rides})
 
 @login_required
-def close_ride(request, ride_id):
-    """Close a posted ride and mark all bookings as closed"""
+def cancel_ride(request, ride_id):
+    """Close a posted ride and mark all bookings as cancelled"""
     ride = get_object_or_404(Ride, id=ride_id)
 
     # Check if user is the ride owner
@@ -232,13 +237,13 @@ def close_ride(request, ride_id):
         return redirect('find_rides')
 
     # Close the ride
-    ride.status = 'closed'
+    ride.status = 'cancelled'
     ride.save()
 
-    # Mark all bookings as closed
-    Booking.objects.filter(ride=ride).update(status='closed')
+    # Mark all bookings as cancelled
+    Booking.objects.filter(ride=ride).update(status='cancelled')
 
-    messages.success(request, "Ride closed successfully! All bookings have been marked as closed.")
+    messages.success(request, "Ride cancelled successfully! All bookings have been marked as cancelled.")
     return redirect('my_rides')
 
 @login_required
@@ -257,7 +262,7 @@ def cancel_booking(request, booking_id):
 
     # 2. Seat Return Logic
     # Only return the seat if the booking was actually Confirmed (taking up space)
-    if booking.status == 'confirmed':
+    if booking.status == 'accepted':
         ride.seats_available += booking.num_seats
         # If ride was full, reopen it
         if ride.status == 'full':
