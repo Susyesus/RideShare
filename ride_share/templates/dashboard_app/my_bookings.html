@@ -156,7 +156,7 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    const alertArea = document.getElementById('alertArea');
+        const alertArea = document.getElementById('alertArea');
         const modal = document.getElementById('ratingModal');
         const openBtns = document.querySelectorAll('.openModalBtn');
         const closeBtn = document.querySelector('.close-btn');
@@ -169,51 +169,96 @@
 
         let currentRating = 0;
 
-        // Open modal
+        // Open modal - FIXED: Use classList instead of style.display
         openBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                modal.style.display = 'flex';
+                modal.classList.add('show');
                 bookingIdInput.value = this.getAttribute('data-booking-id');
                 currentRating = 0;
                 starsInput.value = '';
                 reviewInput.value = '';
                 highlightStars(-1);
                 ratingText.textContent = "Select a star";
+                ratingText.style.color = "#64748b";
                 submitBtn.style.display = 'none';
             });
         });
 
-        // Close modal
-        closeBtn.addEventListener('click', () => modal.style.display = 'none');
+        // Close modal - FIXED: Remove class instead of setting display
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+        });
+        
         window.addEventListener('click', (event) => {
-            if (event.target === modal) modal.style.display = 'none';
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // ESC key to close modal
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.classList.contains('show')) {
+                modal.classList.remove('show');
+            }
         });
 
         function highlightStars(index) {
-            stars.forEach((star, i) => star.classList.toggle('active', i <= index));
+            stars.forEach((star, i) => {
+                star.classList.toggle('active', i <= index);
+            });
         }
 
         stars.forEach((star, index) => {
             star.addEventListener('mouseover', () => {
                 highlightStars(index);
-                ratingText.textContent = `${index + 1} Stars`;
+                ratingText.textContent = `${index + 1} Star${index + 1 === 1 ? '' : 's'}`;
             });
+            
             star.addEventListener('mouseleave', () => {
                 highlightStars(currentRating - 1);
-                ratingText.textContent = currentRating > 0 ? `Rated ${currentRating}` : "Select a star";
+                ratingText.textContent = currentRating > 0 ? 
+                    `You selected ${currentRating} star${currentRating === 1 ? '' : 's'}` : 
+                    "Select a star";
             });
+            
             star.addEventListener('click', () => {
                 currentRating = index + 1;
                 starsInput.value = currentRating;
-                ratingText.textContent = `You selected ${currentRating} stars`;
+                ratingText.textContent = `You selected ${currentRating} star${currentRating === 1 ? '' : 's'}`;
                 submitBtn.style.display = 'inline-block';
             });
         });
-    if (alertArea) {
-        setTimeout(() => {
-            alertArea.style.display = 'none';
-        }, 5000);
+
+        // Form validation
+        const form = modal.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            if (!starsInput.value) {
+                e.preventDefault();
+                ratingText.textContent = "Please select a rating";
+                ratingText.style.color = "#ef4444";
+                return false;
+            }
+        });
+
+        // Auto-hide alerts
+        if (alertArea) {
+            setTimeout(() => {
+                alertArea.style.display = 'none';
+            }, 5000);
         }
+
+        // Add animation to cards on load
+        const cards = document.querySelectorAll('.ride-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
     });
 </script>
 {% endblock %}
