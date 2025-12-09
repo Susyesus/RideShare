@@ -6,6 +6,7 @@ from django.views.decorators.cache import never_cache
 
 from .models import Notification
 from ride_app.models import Ride
+from ride_app.models import Booking
 
 @never_cache
 @login_required
@@ -13,17 +14,11 @@ def dashboard(request):
     upcoming_rides = Ride.objects.filter(status='open').order_by('start_date', 'start_time')
     rides_count = upcoming_rides.count()
     kpis = {
-        "total_rides": 24,
-        "this_week": 8,
-        "connections_made": 38,
+        "completed_bookings_count": Booking.objects.filter(
+            passenger=request.user, 
+            status='completed'
+        ).count()
     }
-
-    recent_activity = [
-        {"activity": "Ride completed", "place": "University Campus", "time": "2 hours ago"},
-        {"activity": "New ride request", "place": "Shopping Center", "time": "5 hours ago"},
-        {"activity": "Ride posted", "place": "Airport", "time": "1 day ago"},
-    ]
-
     context = {
         "kpis": kpis,
         "upcoming_rides": upcoming_rides,
