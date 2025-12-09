@@ -25,6 +25,7 @@
     <div class="dashboard-tabs">
         <button class="tab-btn active" onclick="openTab(event, 'active-rides')">Active Rides</button>
         <button class="tab-btn" onclick="openTab(event, 'ride-history')">Ride History</button>
+        <button class="tab-btn" onclick="openTab(event, 'reviews-tab')">Reviews</button>
     </div>
 
     <div id="active-rides" class="tab-content active-content">
@@ -54,7 +55,7 @@
                             </div>
                             <div class="detail-item">
                                 <label><i class="fa-solid fa-users"></i> Available Seats</label>
-                                <span class="seat-highlight">{{ ride.available_seats }}</span>
+                                <span class="seat-highlight">{{ ride.seats_available }}</span>
                             </div>
                         </div>
 
@@ -146,6 +147,44 @@
             <h3 style="color: #64748b; font-size: 16px;">No ride history available.</h3>
         </div>
     </div>
+
+    <div id="reviews-tab" class="tab-content">
+        <div class="reviews-container" id="reviews-list">
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">{{ review.passenger.first_name|slice:":1" }}{{ review.passenger.last_name|slice:":1" }}</div>
+                            <div>
+                                <span class="reviewer-name">{{ review.passenger.first_name }} {{ review.passenger.last_name }}</span>
+                                <span class="review-date">{{ review.rated_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fa-solid fa-star"></i>
+                            <span>{{ review.rating_stars }}/5</span>
+                        </div>
+                    </div>
+                    
+                    <div class="review-body">
+                        <p>"{{ review.rating_review }}"</p>
+                    </div>
+
+                    <div class="review-footer">
+                        <small>Trip: {{ review.ride.origin }} to {{ review.ride.destination }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                {% endif %}
+        </div>
+
+        <div id="no-reviews-msg" class="no-requests" style="display: none; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <h3 style="color: #64748b; font-size: 16px;">No reviews received yet.</h3>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -178,13 +217,13 @@
     function checkEmptyStates() {
         // --- Check Active Rides ---
         const activeList = document.getElementById('active-rides-list');
-        const activeCards = activeList.getElementsByClassName('dashboard-card');
+        const activeCards = activeList ? activeList.getElementsByClassName('dashboard-card') : [];
         const noActiveMsg = document.getElementById('no-active-rides-msg');
 
-        if (activeCards.length === 0) {
-            noActiveMsg.style.display = 'block'; // Show "No Active Rides"
-        } else {
-            // Also check inner "No pending requests" for each card
+        if (activeCards.length === 0 && noActiveMsg) {
+            noActiveMsg.style.display = 'block';
+        } else if (activeList) {
+            // Check inner requests
             Array.from(activeCards).forEach(card => {
                 const reqList = card.querySelector('.requests-list');
                 const reqItems = reqList.querySelectorAll('.request-item');
@@ -198,12 +237,20 @@
 
         // --- Check Ride History ---
         const historyList = document.getElementById('history-list');
-        // We count immediate children (divs)
-        const historyItems = historyList.querySelectorAll('div.history-card'); 
+        const historyItems = historyList ? historyList.querySelectorAll('div.history-card') : []; 
         const noHistoryMsg = document.getElementById('no-history-msg');
 
-        if (historyItems.length === 0) {
+        if (historyItems.length === 0 && noHistoryMsg) {
             noHistoryMsg.style.display = 'block';
+        }
+
+        // --- Check Reviews (NEW) ---
+        const reviewsList = document.getElementById('reviews-list');
+        const reviewCards = reviewsList ? reviewsList.getElementsByClassName('review-card') : [];
+        const noReviewsMsg = document.getElementById('no-reviews-msg');
+
+        if (reviewCards.length === 0 && noReviewsMsg) {
+            noReviewsMsg.style.display = 'block';
         }
     }
 </script>

@@ -299,6 +299,128 @@ body {
 
 .history-container { max-width: 900px; margin: 0 auto; }
 
+/* =========================================
+   7. REVIEWS TAB STYLES
+   ========================================= */
+
+.reviews-container {
+    max-width: 900px; /* Matches history container width */
+    margin: 0 auto;
+    display: grid;
+    gap: 20px; /* Space between review cards */
+}
+
+.review-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(0,0,0,0.05);
+}
+
+/* Header: User Info & Star Rating */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 15px;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #e0e7ff; /* Light indigo */
+    color: #4338ca; /* Indigo text */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+.reviewer-name {
+    display: block;
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 15px;
+}
+
+.review-date {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Star Rating Styling */
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fffbeb; /* Light yellow bg */
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid #fef3c7;
+}
+
+.review-rating i {
+    color: #fbbf24; /* Gold star color */
+    font-size: 14px;
+}
+
+.review-rating span {
+    font-weight: 700;
+    color: #92400e; /* Darker yellow/brown text */
+    font-size: 13px;
+}
+
+/* Review Content */
+.review-body p {
+    color: #334155;
+    font-size: 15px;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+/* Footer: Context about the trip */
+.review-footer {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.review-footer small {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Responsive adjustment for reviews */
+@media (max-width: 600px) {
+    .review-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
 /* Tablet/Mobile Adjustments */
 @media (max-width: 1000px) {
     .dashboard-card { grid-template-columns: 1fr; } /* Stack Vertically */
