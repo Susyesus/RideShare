@@ -113,6 +113,13 @@ def book_ride(request, ride_id):
         form = BookRideForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
+
+            seats_available = ride.seats_available
+            if booking.num_seats > seats_available:
+                messages.error(request, f"Cannot book {booking.num_seats} seats. Only {seats_available} seats available.")
+                # Return the user to the form with the data they entered
+                return render(request, 'dashboard_app/book_ride.html', {'ride': ride, 'form': form})
+
             booking.ride = ride
             booking.passenger = request.user
             booking.status = 'pending' 
@@ -218,17 +225,14 @@ def complete_ride(request, ride_id):
         ride.status = 'completed'
         ride.save()
         
-        # Get all accepted bookings
-        confirmed_bookings = ride.bookings.filter(status='ongoing')
+         # Get bookings BEFORE updating
+        ongoing_bookings = list(ride.bookings.filter(status='ongoing'))
 
         # Update booking statuses
-        confirmed_bookings.update(status='completed')
+        ride.bookings.filter(status='ongoing').update(status='completed')
 
         # Notify each passenger
-        for booking in ride.bookings.filter(status='accepted'):
-            booking.status = 'completed'
-            booking.save()
-
+        for booking in ongoing_bookings:
             Notification.objects.create(
                 user=booking.passenger,
                 message=f"Your ride to {ride.destination} has been completed!",
@@ -247,9 +251,25 @@ def my_bookings(request):
 
 @login_required
 def my_rides(request):
-    """Show user's posted rides"""
+    """Show user's posted rides and reviews received from passengers"""
+    
+    # 1. Fetch the Driver's Rides
     rides = Ride.objects.filter(driver=request.user).order_by('-start_date', '-start_time')
-    return render(request, "dashboard_app/my_rides.html", {'rides': rides})
+
+    # 2. Fetch the Reviews (Bookings that have a rating)
+    # We filter by 'ride__driver' to get ratings for this user
+    reviews = Booking.objects.filter(
+        ride__driver=request.user,
+        rating_stars__isnull=False
+    ).select_related('passenger', 'ride').order_by('-rated_at')
+
+    # 3. Add both to context
+    context = {
+        'rides': rides,
+        'reviews': reviews
+    }
+    
+    return render(request, "dashboard_app/my_rides.html", context)
 
 @login_required
 def cancel_ride(request, ride_id):
@@ -293,13 +313,13 @@ def cancel_booking(request, booking_id):
         return redirect('my_bookings')
 
     # 2. Time Check Logic
-    ride_datetime = datetime.combine(ride.start_date, ride.start_time)
-    if timezone.is_aware(timezone.now()):
-        ride_datetime = timezone.make_aware(ride_datetime)
+    # ride_datetime = datetime.combine(ride.start_date, ride.start_time)
+    # if timezone.is_aware(timezone.now()):
+    #     ride_datetime = timezone.make_aware(ride_datetime)
 
-    if ride_datetime < timezone.now():
-        messages.error(request, "You cannot cancel a ride that has already started.")
-        return redirect('my_bookings')
+    # if ride_datetime < timezone.now():
+    #     messages.error(request, "You cannot cancel a ride that has already started.")
+    #     return redirect('my_bookings')
 
     # 3. Update Status (Only for pending bookings now)
     booking.status = 'cancelled'
