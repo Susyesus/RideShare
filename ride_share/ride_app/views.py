@@ -267,7 +267,12 @@ def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, passenger=request.user)
     ride = booking.ride
 
-    # 1. Time Check Logic
+    # 1. Check if already accepted
+    if booking.status == 'accepted':
+        messages.error(request, "You cannot cancel a booking that has already been accepted by the driver.")
+        return redirect('my_bookings')
+
+    # 2. Time Check Logic
     ride_datetime = datetime.combine(ride.start_date, ride.start_time)
     if timezone.is_aware(timezone.now()):
         ride_datetime = timezone.make_aware(ride_datetime)
@@ -276,27 +281,18 @@ def cancel_booking(request, booking_id):
         messages.error(request, "You cannot cancel a ride that has already started.")
         return redirect('my_bookings')
 
-    # 2. Seat Return Logic
-    # Only return the seat if the booking was actually Confirmed (taking up space)
-    if booking.status == 'accepted':
-        ride.seats_available += booking.num_seats
-        # If ride was full, reopen it
-        if ride.status == 'full':
-            ride.status = 'open'
-        ride.save()
-
-    # 3. Update Status
+    # 3. Update Status (Only for pending bookings now)
     booking.status = 'cancelled'
     booking.save()
 
-    # 4. Notify Driver (US 4.1 Requirement)
+    # 4. Notify Driver
     Notification.objects.create(
         user=ride.driver,
-        message=f"{request.user.first_name} cancelled their booking for {ride.destination}.",
+        message=f"{request.user.first_name} cancelled their pending request for {ride.destination}.",
         link="/ride/my-rides/"
     )
 
-    messages.success(request, "Your booking has been cancelled successfully.")
+    messages.success(request, "Your booking request has been cancelled.")
     return redirect('my_bookings')
 
 @login_required
