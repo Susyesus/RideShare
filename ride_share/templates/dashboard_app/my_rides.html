@@ -101,6 +101,12 @@
                                 <i class="fa-solid fa-flag-checkered"></i> Mark as Completed
                             </button>
                         </form>
+                        <a href="{% url 'cancel_ride' ride.id %}" 
+                            class="btn-request" 
+                            style="background-color: #ef4444; color: white; margin-top: 8px; text-decoration: none;"
+                            onclick="return confirm('Are you sure you want to cancel this ride? All passengers will be notified.');">
+                                <i class="fa-solid fa-ban"></i> Cancel Ride
+                        </a>
                         
                         <div class="request-box">
                             <strong>Pending Requests:</strong>

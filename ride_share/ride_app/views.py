@@ -206,8 +206,8 @@ def complete_ride(request, ride_id):
 
         # Notify each passenger
         for booking in ride.bookings.filter(status='accepted'):
-        booking.status = 'completed'
-        booking.save()
+            booking.status = 'completed'
+            booking.save()
 
         Notification.objects.create(
             user=booking.passenger,
