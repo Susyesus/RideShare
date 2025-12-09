@@ -51,6 +51,7 @@ def post_ride(request):
             ride.driver = request.user
             ride.status = 'open'
             ride.save()
+            messages.success(request, "You have succefully posted a ride.")
             return redirect('my_rides')
     else:
         form = PostRideForm()
@@ -248,7 +249,7 @@ def my_bookings(request):
     """Show user's bookings"""
     bookings = Booking.objects.filter(passenger=request.user)\
         .select_related('ride', 'ride__driver')\
-        .order_by('-created_at')
+        .order_by('-id')
     return render(request, "dashboard_app/my_bookings.html", {'bookings': bookings})
 
 @login_required
@@ -256,7 +257,7 @@ def my_rides(request):
     """Show user's posted rides and reviews received from passengers"""
     
     # 1. Fetch the Driver's Rides
-    rides = Ride.objects.filter(driver=request.user).order_by('-start_date', '-start_time')
+    rides = Ride.objects.filter(driver=request.user).order_by('-id')
 
     # 2. Fetch the Reviews (Bookings that have a rating)
     # We filter by 'ride__driver' to get ratings for this user
@@ -400,7 +401,21 @@ def start_ride(request, ride_id):
         # Send notification
         Notification.objects.create(
             user=booking.passenger,
-            message=f"Your ride from {ride.origin} to {ride.destination} has started!"
+            message=f"Your ride from {ride.origin} to {ride.destination} has started!",
+            link="/ride/my-bookings/"
+        )
+
+    # 2. NEW: Auto-decline pending bookings
+    pending_bookings = ride.bookings.filter(status='pending')
+    for booking in pending_bookings:
+        booking.status = 'declined'  # Ensure this matches your models choices
+        booking.save()
+
+        # Notify passenger
+        Notification.objects.create(
+            user=booking.passenger,
+            message=f"Your booking request for {ride.origin} to {ride.destination} was automatically declined because the ride has started.",
+            link="/ride/my-bookings/"
         )
 
     messages.success(request, "Ride started successfully. Passengers have been notified.")
