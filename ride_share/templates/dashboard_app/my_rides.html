@@ -94,40 +94,64 @@
                 </div>
 
                 <div class="ride-actions">
-                    {% if ride.status == 'open' or ride.status == 'full' %}
-                        <form method="POST" action="{% url 'complete_ride' ride.id %}">
+                    {% if ride.driver == user %}
+                        {% if ride.status == 'open' or ride.status == 'full' %}
+                            <!-- Start Ride -->
+                            <form method="POST" action="{% url 'start_ride' ride.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Start Ride</button>
+                            </form>
+
+                            <!-- Pending Requests -->
+                            <div class="request-box">
+                                <strong>Pending Requests:</strong>
+                                {% with pending_bookings=ride.bookings.all %}
+                                    {% if pending_bookings %}
+                                        {% for booking in pending_bookings %}
+                                            {% if booking.status == 'pending' %}
+                                            <div class="request-item">
+                                                <span>{{ booking.passenger.first_name }} ({{ booking.num_seats }} seats)</span>
+                                                <div>
+                                                    <form method="POST" action="{% url 'accept_booking' booking.id %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn-action btn-accept">Accept</button>
+                                                    </form>
+                                                    <form method="POST" action="{% url 'decline_booking' booking.id %}" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn-action btn-decline">Decline</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <p style="font-size: 12px; color: #64748b;">No pending requests.</p>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        {% elif ride.status == 'ongoing' %}
+                            <!-- Complete Ride -->
+                            <form method="POST" action="{% url 'complete_ride' ride.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-request btn-complete">
+                                    <i class="fa-solid fa-flag-checkered"></i> Mark as Completed
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <!-- Cancel Ride (only if not completed or cancelled) -->
+                        {% if ride.status == 'open' and ride.status != 'full' %}
+                        <form method="POST" action="{% url 'cancel_ride' ride.id %}" onsubmit="return confirm('Are you sure you want to cancel this ride? All passengers will be notified.');">
                             {% csrf_token %}
-                            <button type="submit" class="btn-request btn-complete">
-                                <i class="fa-solid fa-flag-checkered"></i> Mark as Completed
+                            <button type="submit" class="btn-request" style="background-color: #ef4444; color: white; margin-top: 8px;">
+                                <i class="fa-solid fa-ban"></i> Cancel Ride
                             </button>
                         </form>
-                        <a href="{% url 'cancel_ride' ride.id %}" 
-                            class="btn-request" 
-                            style="background-color: #ef4444; color: white; margin-top: 8px; text-decoration: none;"
-                            onclick="return confirm('Are you sure you want to cancel this ride? All passengers will be notified.');">
-                                <i class="fa-solid fa-ban"></i> Cancel Ride
-                        </a>
-                        
-                        <div class="request-box">
-                            <strong>Pending Requests:</strong>
-                            {% if ride.bookings.all %}
-                                {% for booking in ride.bookings.all %}
-                                    {% if booking.status == 'pending' %}
-                                    <div class="request-item">
-                                        <span>{{ booking.passenger.first_name }} ({{ booking.num_seats }} seats)</span>
-                                        <div>
-                                            <a href="{% url 'accept_booking' booking.id %}" class="btn-action btn-accept">Accept</a>
-                                            <a href="{% url 'decline_booking' booking.id %}" class="btn-action btn-decline">Decline</a>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                <p style="font-size: 12px; color: #64748b;">No pending requests.</p>
-                            {% endif %}
-                        </div>
+                        {% endif %}
+
                     {% else %}
-                            <button class="btn-request" disabled style="opacity: 0.6;">Ride {{ ride.status|title }}</button>
+                        <!-- Non-driver sees nothing or disabled -->
+                        <button class="btn-request" disabled style="opacity: 0.6;">Ride {{ ride.status|title }}</button>
                     {% endif %}
                 </div>
             </div>
