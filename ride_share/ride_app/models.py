@@ -4,6 +4,13 @@ from django.db import models
 
 # Create your models here.
 class Ride(models.Model):
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('full', 'Full'),
+        ('cancelled', 'Cancelled'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+    ]
     driver = models.ForeignKey(User, on_delete=models.CASCADE)
     origin = models.CharField(max_length=100)
     destination = models.CharField(max_length=100)
@@ -12,7 +19,7 @@ class Ride(models.Model):
     start_time = models.TimeField()
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # default 0
     remarks = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=20, default='open')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
 
     def __str__(self):
         return f"{self.driver.first_name} {self.driver.last_name} | {self.origin} to {self.destination}: {self.status}"
@@ -21,7 +28,8 @@ class Ride(models.Model):
 class Booking(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
+        ('accepted', 'Accepted'),
+        ('ongoing', 'Ongoing'),
         ('cancelled', 'Cancelled'),
         ('declined', 'Declined'),
         ('completed', 'Completed'),
@@ -46,6 +54,6 @@ def get_driver_avg_rating(self): #To get average rating for driver
         ride__driver=self,
         rating_stars__isnull=False
     ).aggregate(avg=Avg('rating_stars'))
-    return result['avg'] or 0
+    return round(result['avg'] or 0, 2)
 
 User.add_to_class('avg_rating', property(get_driver_avg_rating))
