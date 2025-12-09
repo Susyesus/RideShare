@@ -9,6 +9,7 @@ from datetime import datetime
 
 from .forms import PostRideForm, BookRideForm
 from .models import Ride, Booking
+
 from dashboard_app.utils import attach_driver_profile_pictures
 from dashboard_app.models import Notification
 
@@ -185,7 +186,7 @@ def decline_booking(request, booking_id):
 def complete_ride(request, ride_id):
     ride = get_object_or_404(Ride, id=ride_id)
 
-    ride_datetime = datetime.datetime.combine(ride.start_date, ride.start_time)
+    ride_datetime = datetime.combine(ride.start_date, ride.start_time)
     if timezone.is_aware(timezone.now()):
         ride_datetime = timezone.make_aware(ride_datetime)
 
@@ -228,22 +229,33 @@ def my_rides(request):
 
 @login_required
 def cancel_ride(request, ride_id):
-    """Close a posted ride and mark all bookings as cancelled"""
+    """Cancel a posted ride, notify passengers, and mark bookings as cancelled"""
     ride = get_object_or_404(Ride, id=ride_id)
 
     # Check if user is the ride owner
     if ride.driver != request.user:
-        messages.error(request, "You can only close your own rides.")
-        return redirect('find_rides')
+        messages.error(request, "You can only cancel your own rides.")
+        return redirect('my_rides')
 
-    # Close the ride
+    # 1. Update Ride Status
     ride.status = 'cancelled'
     ride.save()
 
-    # Mark all bookings as cancelled
-    Booking.objects.filter(ride=ride).update(status='cancelled')
+    # 2. Get affected bookings BEFORE updating them (to know who to notify)
+    affected_bookings = ride.bookings.filter(status__in=['pending', 'accepted'])
 
-    messages.success(request, "Ride cancelled successfully! All bookings have been marked as cancelled.")
+    # 3. Create Notifications
+    for booking in affected_bookings:
+        Notification.objects.create(
+            user=booking.passenger,
+            message=f"The ride to {ride.destination} was cancelled by the driver.",
+            link="/ride/my-bookings/"
+        )
+
+    # 4. Mark all bookings as cancelled
+    affected_bookings.update(status='cancelled')
+
+    messages.success(request, "Ride cancelled successfully! Passengers have been notified.")
     return redirect('my_rides')
 
 @login_required
