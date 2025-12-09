@@ -246,7 +246,9 @@ def complete_ride(request, ride_id):
 @login_required
 def my_bookings(request):
     """Show user's bookings"""
-    bookings = Booking.objects.filter(passenger=request.user).order_by('-created_at')
+    bookings = Booking.objects.filter(passenger=request.user)\
+        .select_related('ride', 'ride__driver')\
+        .order_by('-created_at')
     return render(request, "dashboard_app/my_bookings.html", {'bookings': bookings})
 
 @login_required
