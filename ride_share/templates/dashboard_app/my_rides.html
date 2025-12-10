@@ -87,30 +87,52 @@
                     </div>
 
                     <div class="card-sidebar">
-                        <div class="sidebar-header">
-                            <span>Passenger Requests</span>
+                        
+                        <div class="sidebar-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                            <span style="color: #0f172a;"><i class="fa-solid fa-user-check"></i> Passenger List</span>
                         </div>
-                        <div class="requests-list">
-                            {% with pending_bookings=ride.bookings.all %}
-                                {% if pending_bookings %}
-                                    {% for booking in pending_bookings %}
-                                        {% if booking.status == 'pending' %}
-                                            <div class="request-item">
-                                                <span class="req-name">{{ booking.passenger.first_name }}</span>
-                                                <span class="req-seats"><i class="fa-solid fa-chair"></i> requesting {{ booking.num_seats }} seat(s)</span>
-                                                <div class="req-buttons">
-                                                    <form method="POST" action="{% url 'accept_booking' booking.id %}" style="flex:1;">
-                                                        {% csrf_token %}<button type="submit" class="btn btn-sm btn-success" style="width:100%">Accept</button>
-                                                    </form>
-                                                    <form method="POST" action="{% url 'decline_booking' booking.id %}" style="flex:1;">
-                                                        {% csrf_token %}<button type="submit" class="btn btn-sm btn-reject" style="width:100%">Decline</button>
-                                                    </form>
-                                                </div>
+                        
+                        <div class="requests-list confirmed-list" style="flex: 0 0 auto; max-height: 200px; border-bottom: 1px solid #e2e8f0;">
+                            {% with confirmed_bookings=ride.bookings.all %}
+                                {% for booking in confirmed_bookings %}
+                                    {% if booking.status == 'accepted' or booking.status == 'ongoing' %}
+                                        <div class="request-item" style="border-left: 3px solid #22c55e;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span class="req-name">{{ booking.passenger.first_name }} {{ booking.passenger.last_name }}</span>
+                                                <span class="status-badge" style="background: #dcfce7; color: #166534; font-size: 10px; padding: 2px 8px;">
+                                                    {{ booking.num_seats }} seat(s)
+                                                </span>
                                             </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endif %}
-                                <div class="no-requests-msg" style="display:none; text-align: center; padding: 20px; color: #cbd5e1; font-style: italic;">No pending requests.</div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                                <div class="no-confirmed-msg" style="display:none; text-align: center; padding: 15px; color: #cbd5e1; font-style: italic; font-size: 13px;">No confirmed passengers.</div> 
+                            {% endwith %}
+                        </div>
+
+                        <div class="sidebar-header">
+                            <span><i class="fa-regular fa-bell"></i> Pending Requests</span>
+                        </div>
+                        
+                        <div class="requests-list pending-list" style="flex: 1;">
+                            {% with pending_bookings=ride.bookings.all %}
+                                {% for booking in pending_bookings %}
+                                    {% if booking.status == 'pending' %}
+                                        <div class="request-item">
+                                            <span class="req-name">{{ booking.passenger.first_name }}</span>
+                                            <span class="req-seats"><i class="fa-solid fa-chair"></i> requesting {{ booking.num_seats }} seat(s)</span>
+                                            <div class="req-buttons">
+                                                <form method="POST" action="{% url 'accept_booking' booking.id %}" style="flex:1;">
+                                                    {% csrf_token %}<button type="submit" class="btn btn-sm btn-success" style="width:100%">Accept</button>
+                                                </form>
+                                                <form method="POST" action="{% url 'decline_booking' booking.id %}" style="flex:1;">
+                                                    {% csrf_token %}<button type="submit" class="btn btn-sm btn-reject" style="width:100%">Decline</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                                <div class="no-pending-msg" style="display:none; text-align: center; padding: 20px; color: #cbd5e1; font-style: italic;">No pending requests.</div>
                             {% endwith %}
                         </div>
                     </div>
@@ -130,14 +152,40 @@
         <div class="history-container" id="history-list">
             {% for ride in rides %}
                 {% if ride.status == 'completed' or ride.status == 'cancelled' %}
-                <div class="history-card" style="background: #fff; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="font-size: 18px; margin-bottom: 5px; color: #0f172a;">
-                            {{ ride.origin }} <i class="fa-solid fa-arrow-right" style="font-size: 14px; margin: 0 5px; color: #cbd5e1;"></i> {{ ride.destination }}
-                        </h3>
-                        <p style="color: #64748b; font-size: 14px; margin: 0;">{{ ride.start_date }} at {{ ride.start_time }}</p>
+                <div class="history-card" style="background: #fff; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px;">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h3 style="font-size: 18px; margin-bottom: 5px; color: #0f172a;">
+                                {{ ride.origin }} <i class="fa-solid fa-arrow-right" style="font-size: 14px; margin: 0 5px; color: #cbd5e1;"></i> {{ ride.destination }}
+                            </h3>
+                            <p style="color: #64748b; font-size: 14px; margin: 0;">{{ ride.start_date }} at {{ ride.start_time }}</p>
+                        </div>
+                        <span class="status-badge status-{{ ride.status }}">{{ ride.status }}</span>
                     </div>
-                    <span class="status-badge status-{{ ride.status }}">{{ ride.status }}</span>
+
+                    <div style="border-top: 1px dashed #e2e8f0; padding-top: 15px;">
+                        <p style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px;">
+                            <i class="fa-solid fa-users-line"></i> Passenger Manifest
+                        </p>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            {% for booking in ride.bookings.all %}
+                                {% if booking.status == 'confirmed' or booking.status == 'completed' %}
+                                    <div style="display: flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 6px 12px; border-radius: 20px;">
+                                        <div style="width: 24px; height: 24px; background: #cbd5e1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
+                                            {{ booking.passenger.first_name|slice:":1" }}
+                                        </div>
+                                        <span style="font-size: 13px; font-weight: 600; color: #475569;">
+                                            {{ booking.passenger.first_name }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <span style="font-size: 13px; color: #94a3b8; font-style: italic;">No passengers recorded.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
             {% endfor %}
@@ -176,8 +224,7 @@
                     </div>
                 </div>
                 {% endfor %}
-            {% else %}
-                {% endif %}
+            {% endif %}
         </div>
 
         <div id="no-reviews-msg" class="no-requests" style="display: none; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
@@ -215,7 +262,7 @@
     });
 
     function checkEmptyStates() {
-        // --- Check Active Rides ---
+        // --- Check Active Rides Tab ---
         const activeList = document.getElementById('active-rides-list');
         const activeCards = activeList ? activeList.getElementsByClassName('dashboard-card') : [];
         const noActiveMsg = document.getElementById('no-active-rides-msg');
@@ -223,19 +270,24 @@
         if (activeCards.length === 0 && noActiveMsg) {
             noActiveMsg.style.display = 'block';
         } else if (activeList) {
-            // Check inner requests
+            // Check inner lists (Confirmed vs Pending)
             Array.from(activeCards).forEach(card => {
-                const reqList = card.querySelector('.requests-list');
-                const reqItems = reqList.querySelectorAll('.request-item');
-                const noReqMsg = reqList.querySelector('.no-requests-msg');
                 
-                if (reqItems.length === 0 && noReqMsg) {
-                    noReqMsg.style.display = 'block';
-                }
+                // Check Confirmed List
+                const confirmedList = card.querySelector('.confirmed-list');
+                const confirmedItems = confirmedList.querySelectorAll('.request-item');
+                const noConfirmedMsg = confirmedList.querySelector('.no-confirmed-msg');
+                if (confirmedItems.length === 0 && noConfirmedMsg) noConfirmedMsg.style.display = 'block';
+
+                // Check Pending List
+                const pendingList = card.querySelector('.pending-list');
+                const pendingItems = pendingList.querySelectorAll('.request-item');
+                const noPendingMsg = pendingList.querySelector('.no-pending-msg');
+                if (pendingItems.length === 0 && noPendingMsg) noPendingMsg.style.display = 'block';
             });
         }
 
-        // --- Check Ride History ---
+        // --- Check Ride History Tab ---
         const historyList = document.getElementById('history-list');
         const historyItems = historyList ? historyList.querySelectorAll('div.history-card') : []; 
         const noHistoryMsg = document.getElementById('no-history-msg');
@@ -244,7 +296,7 @@
             noHistoryMsg.style.display = 'block';
         }
 
-        // --- Check Reviews (NEW) ---
+        // --- Check Reviews Tab ---
         const reviewsList = document.getElementById('reviews-list');
         const reviewCards = reviewsList ? reviewsList.getElementsByClassName('review-card') : [];
         const noReviewsMsg = document.getElementById('no-reviews-msg');
