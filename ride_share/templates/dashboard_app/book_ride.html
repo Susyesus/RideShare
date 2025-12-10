@@ -5,6 +5,16 @@
  
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/find_rides.css' %}">
+{% if messages %}
+    <div class="alert-area" id="alertArea">
+        {% for message in messages %}
+        <div class="alert-message {{ message.tags }}">
+            <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
  
 <div class="find-rides-container">
  
@@ -126,7 +136,7 @@
                 <div class="info-card">
                     <div class="info-header">
                         <i class="fa-solid fa-message"></i>
-                        <h3>Driver's Notes</h3>
+                        <h3>Driver's remarks</h3>
                     </div>
                     <div class="remarks-content">
                         <div class="remarks-text">
@@ -176,7 +186,7 @@
                             </li>
                             <li>
                                 <i class="fa-solid fa-check"></i>
-                                Meet at the specified pickup location
+                                Read remark for additional details
                             </li>
                         </ul>
                     </div>
@@ -203,6 +213,16 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertArea = document.getElementById('alertArea');
+        if (alertArea) {
+            setTimeout(() => {
+                alertArea.style.display = 'none';
+            }, 5000);
+        }
+    });
+</script>
  
 <style>
     /* Layout */
