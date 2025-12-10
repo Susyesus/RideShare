@@ -1,5 +1,8 @@
 /* Alert Area */
 .alert-area {
+    width: 50%;
+    position: absolute;
+    align-self: center;
     margin-bottom: 1.5rem;
 }
 
