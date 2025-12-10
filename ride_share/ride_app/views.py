@@ -113,6 +113,17 @@ def book_ride(request, ride_id):
         form = BookRideForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
+
+            seats_available = ride.seats_available
+            
+            # Validation: Check if requested seats exceed availability
+            if booking.num_seats > seats_available:
+                messages.error(request, f"Cannot book {booking.num_seats} seats. Only {seats_available} seats available.")
+                
+                # Update the form widget to limit the max input on re-render
+                form.fields['num_seats'].widget.attrs['max'] = seats_available
+                return render(request, 'dashboard_app/book_ride.html', {'ride': ride, 'form': form})
+
             booking.ride = ride
             booking.passenger = request.user
             booking.status = 'pending' 
@@ -128,6 +139,8 @@ def book_ride(request, ride_id):
             return redirect('my_bookings')
     else:
         form = BookRideForm()
+        # Initial Page Load: Set the max input value to currently available seats
+        form.fields['num_seats'].widget.attrs['max'] = ride.seats_available
 
     return render(request, 'dashboard_app/book_ride.html', {'ride': ride, 'form': form})
 
