@@ -17,6 +17,6 @@ def user_profile_picture(request):
     """Add user's profile picture to all templates."""
     if request.user.is_authenticated:
         return {
-            'user_picture': get_user_profile_picture(request.user)
+            'user_picture': request.session.get('user_picture')
         }
     return {}

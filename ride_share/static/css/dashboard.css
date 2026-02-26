@@ -16,7 +16,42 @@
     --secondary: #10b981; 
     --accent: #f59e0b; 
 }
+/* Empty State Design - Gray Background */
+.empty-rides-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    /* Change background to a light gray.
+       Alternatively, use an existing variable like var(--bg-subtle) if you have one. */
+    background: #f8f9fa; 
+    border: none; /* Removed border for a flatter gray look */
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    margin-top: 20px; /* Added some spacing from the top */
+}
 
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: var(--border-color); /* Subtle gray for the icon */
+    opacity: 0.7; /* Slightly transparent to blend better with gray bg */
+}
+
+.empty-rides-state h3 {
+    color: var(--text-main);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.empty-rides-state p {
+    font-size: 14px;
+    max-width: 300px;
+    margin: 0 auto;
+}
 /* ==================== BASE STYLES ==================== */
 * { 
     box-sizing: border-box; 
@@ -512,11 +547,11 @@ body {
     background: linear-gradient(135deg, var(--primary), #60a5fa); 
 }
 
-.kpi-secondary { 
+.kpi-accent { 
     background: linear-gradient(135deg, var(--secondary), #34d399); 
 }
 
-.kpi-accent { 
+.kpi-secondary { 
     background: linear-gradient(135deg, var(--accent), #fbbf24); 
 }
 

@@ -5,161 +5,175 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/my_bookings.css' %}">
+
 {% if messages %}
-            <div class="alert-area" id="alertArea">
-                {% for message in messages %}
-                <div class="alert-message {{ message.tags }}">
-                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-                    <span>{{ message }}</span>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            <div id="ratingModal" class="modal">
-                <div class="modal-content">
-                    <span class="close-btn">&times;</span>
-                    <h2>How was your experience?</h2>
-
-                    <form method="POST" action="{% url 'submit_booking_rating' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="booking_id" id="modalBookingId">
-                        <input type="hidden" name="stars" id="ratingStars">
-
-                        <div class="rating-component">
-                            <button type="button" class="star-btn" data-value="1">&#9733;</button>
-                            <button type="button" class="star-btn" data-value="2">&#9733;</button>
-                            <button type="button" class="star-btn" data-value="3">&#9733;</button>
-                            <button type="button" class="star-btn" data-value="4">&#9733;</button>
-                            <button type="button" class="star-btn" data-value="5">&#9733;</button>
-                        </div>
-
-                        <p class="rating-text">Select a star</p>
-                        <textarea name="review" id="ratingReview" placeholder="Optional review"></textarea>
-
-                        <button type="submit" id="submitRatingBtn" style="display:none;">Submit</button>
-                    </form>
-                </div>
-            </div>
-<div class="find-rides-container">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="header-content">
-            <h1>
-                <i class="fa-solid fa-bookmark" style="color: #000;"></i>
-                My Bookings
-            </h1>
-            <span class="results-count">
-                {% if bookings %}
-                    Showing {{ bookings|length }} booking{{ bookings|length|pluralize }}
-                {% else %}
-                    No bookings yet
-                {% endif %}
-            </span>
-        </div>
-        <p>View all your ride bookings and their status.</p>
+<div class="alert-area" id="alertArea">
+    {% for message in messages %}
+    <div class="alert-message {{ message.tags }}">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+        <span>{{ message }}</span>
     </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-
-    <!-- Bookings List -->
-    <div class="rides-grid" id="bookingsGrid">
-        {% if bookings %}
-            {% for booking in bookings %}
-            <div class="ride-card">
-                <div class="ride-info">
-                    <div class="ride-header">
-                        <div class="driver-avatar">{{ booking.ride.driver.first_name|slice:":1" }}{{ booking.ride.driver.last_name|slice:":1" }}</div>
-                        <div class="driver-details">
-                            <div class="driver-name">{{ booking.ride.driver.get_full_name }}</div>
-                        </div>
-                    </div>
-
-                    <div class="ride-route">
-                        <div class="location">
-                            <span class="location-label">From</span>
-                            <span class="location-name">{{ booking.ride.origin }}</span>
-                        </div>
-                        <i class="fa-solid fa-arrow-right route-arrow"></i>
-                        <div class="location">
-                            <span class="location-label">To</span>
-                            <span class="location-name">{{ booking.ride.destination }}</span>
-                        </div>
-                    </div>
-
-                    <div class="ride-meta">
-                        <div class="meta-item">
-                            <i class="fa-regular fa-calendar"></i>
-                            <span>{{ booking.ride.start_date }}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fa-regular fa-clock"></i>
-                            <span>{{ booking.ride.start_time }}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fa-solid fa-user-group"></i>
-                            <span>{{ booking.num_seats }} seat{{ booking.num_seats|pluralize }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ride-actions">
-                        <span class="status" 
-                        {% if booking.status == 'accepted' %}
-                            style="color: #065f46;"
-                        {% elif booking.status == 'completed' %}
-                            style="color: #1e40af;"
-                        {% elif booking.status == 'pending' %}
-                            style="color: #92400e;"
-                        {% elif booking.status == 'cancelled' %}
-                            style="color: #991b1b;"
-                        {% elif booking.status == 'closed' %}
-                            style="color: #374151;"
-                        {% endif %}
-                    ">
-                            {{ booking.get_status_display }}
-                        </span>
-                    {% if booking.ride.status == 'open' or booking.ride.status == 'full' %}
-                        <a href="{% url 'cancel_booking' booking.id %}" 
-                        class="btn-cancel"
-                        onclick="return confirm('Are you sure you want to cancel this booking?');">
-                            Cancel Booking
-                        </a>
-                    {% endif %}
-
-                    {% if booking.ride.status == 'completed' %}
-                    <!-- Only show rating if booking was accepted (not declined/cancelled) -->
-                    {% if booking.status == 'accepted' or booking.status == 'completed' %}
-                        {% if not booking.rating_stars %}
-                        <button class="btn-rate openModalBtn" data-booking-id="{{ booking.id }}">
-                            Rate Driver
-                        </button>
-                        {% else %}
-                        <button class="btn-rate" disabled style="opacity: 0.6; background-color: #10b981; color: white; border: none;">
-                            <i class="fa-solid fa-star"></i> Rated {{ booking.rating_stars }}
-                        </button>
-                        {% endif %}
-                    {% endif %}
-                {% endif %}
-        
-                </div>
+<div id="ratingModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>How was your experience?</h2>
+        <form method="POST" action="{% url 'submit_booking_rating' %}">
+            {% csrf_token %}
+            <input type="hidden" name="booking_id" id="modalBookingId">
+            <input type="hidden" name="stars" id="ratingStars">
+            <div class="rating-component">
+                <button type="button" class="star-btn" data-value="1">&#9733;</button>
+                <button type="button" class="star-btn" data-value="2">&#9733;</button>
+                <button type="button" class="star-btn" data-value="3">&#9733;</button>
+                <button type="button" class="star-btn" data-value="4">&#9733;</button>
+                <button type="button" class="star-btn" data-value="5">&#9733;</button>
             </div>
-            {% endfor %}
-        {% else %}
-            <!-- No Bookings Message -->
-            <div class="no-results" id="noBookings" style="grid-column: 1 / -1;">
-                <div class="no-results-icon">
-                    <i class="fa-regular fa-face-frown"></i>
-                </div>
-                <h3>No Bookings Yet</h3>
-                <p>You haven't booked any rides yet. Start exploring available rides to make your first booking!</p>
-                <a href="{% url 'find_rides' %}" class="btn-request" style="margin-top: 16px;">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    Find Rides
-                </a>
-            </div>
-        {% endif %}
+            <p class="rating-text">Select a star</p>
+            <textarea name="review" id="ratingReview" placeholder="Optional review"></textarea>
+            <button type="submit" id="submitRatingBtn" style="display:none;">Submit</button>
+        </form>
     </div>
 </div>
+
+<div class="find-rides-container">
+    <div class="page-header">
+        <h1><i class="fa-solid fa-bookmark"></i> My Bookings</h1>
+    </div>
+
+    <div class="dashboard-tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'active-bookings')">Active Bookings</button>
+        <button class="tab-btn" onclick="openTab(event, 'booking-history')">History</button>
+    </div>
+
+    <div id="active-bookings" class="tab-content active-content">
+        <div id="active-list">
+            {% for booking in bookings %}
+                {% if booking.status == 'pending' or booking.status == 'accepted' or booking.status == 'ongoing' %}
+                
+                <div class="dashboard-card">
+                    
+                    <div class="card-main">
+                        <div class="ride-header">
+                            <h2 class="ride-route-title">
+                                {{ booking.ride.origin }} 
+                                <i class="fa-solid fa-arrow-right" style="font-size: 18px; color: #cbd5e1; margin: 0 10px;"></i> 
+                                {{ booking.ride.destination }}
+                            </h2>
+                        </div>
+
+                        <div class="ride-details-grid">
+                            <div class="detail-item">
+                                <label><i class="fa-regular fa-calendar"></i> Date</label>
+                                <span>{{ booking.ride.start_date }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label><i class="fa-regular fa-clock"></i> Time</label>
+                                <span>{{ booking.ride.start_time }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label><i class="fa-solid fa-user"></i> Driver</label>
+                                <span>{{ booking.ride.driver.first_name }} {{ booking.ride.driver.last_name|slice:":1" }}.</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-item" style="margin-top: 10px;">
+                            <label>Your Seats</label>
+                            <span class="seat-highlight">{{ booking.num_seats }} seat{{ booking.num_seats|pluralize }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-sidebar">
+                        <div class="sidebar-header">
+                            <span>Booking Status</span>
+                        </div>
+                        <div class="requests-list" style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+                            
+                            <span class="status-badge status-{{ booking.status }}" style="font-size: 14px; padding: 8px 16px;">
+                                {{ booking.get_status_display }}
+                            </span>
+
+                            <div class="req-buttons" style="flex-direction: column; width: 100%; padding: 0 20px;">
+                                {% if booking.status == 'pending' %}
+                                    <form method="POST" action="{% url 'cancel_booking' booking.id %}" onsubmit="return confirm('Cancel this booking?');" style="width: 100%;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger" style="width: 100%;">
+                                            <i class="fa-solid fa-xmark"></i> Cancel Booking
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div id="no-active-msg" class="no-requests" style="display: none; background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px;">
+            <h3 style="color: #0f172a; margin-bottom: 10px;">No Active Bookings</h3>
+            <p style="color: #64748b;">You don't have any upcoming trips.</p>
+            <a href="{% url 'find_rides' %}" class="btn btn-primary" style="margin-top: 15px; display: inline-flex; width: auto;">Find a Ride</a>
+        </div>
+    </div>
+
+    <div id="booking-history" class="tab-content">
+        <div class="history-container" id="history-list">
+            {% for booking in bookings %}
+                {% if booking.status == 'completed' or booking.status == 'cancelled' or booking.status == 'declined' or booking.status == 'closed' %}
+                <div class="history-card" style="background: #fff; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 18px; margin-bottom: 5px; color: #0f172a;">
+                            {{ booking.ride.origin }} <i class="fa-solid fa-arrow-right" style="font-size: 14px; margin: 0 5px; color: #cbd5e1;"></i> {{ booking.ride.destination }}
+                        </h3>
+                        <p style="color: #64748b; font-size: 14px; margin: 0;">{{ booking.ride.start_date }} • Driver: {{ booking.ride.driver.get_full_name }}</p>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                        <span class="status-badge status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+                        
+                        {% if booking.status == 'completed' %}
+                            {% if not booking.rating_stars %}
+                                <button class="btn btn-sm btn-primary openModalBtn" data-booking-id="{{ booking.id }}" style="width: auto;">
+                                    <i class="fa-solid fa-star"></i> Rate
+                                </button>
+                            {% else %}
+                                <small style="color: #f59e0b; font-weight: 700;"><i class="fa-solid fa-star"></i> {{ booking.rating_stars }}/5</small>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div id="no-history-msg" class="no-requests" style="display: none; background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px;">
+            <h3 style="color: #64748b; font-size: 16px;">No booking history available.</h3>
+        </div>
+    </div>
+</div>
+
 <script>
+    // 1. Tab Switching Logic
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active-content");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active-content");
+        if(evt) evt.currentTarget.classList.add("active");
+    }
+
+    // 2. Main Logic (Modals, Alerts, Empty States)
     document.addEventListener('DOMContentLoaded', function() {
         const alertArea = document.getElementById('alertArea');
         const modal = document.getElementById('ratingModal');
@@ -171,99 +185,57 @@
         const bookingIdInput = document.getElementById('modalBookingId');
         const starsInput = document.getElementById('ratingStars');
         const reviewInput = document.getElementById('ratingReview');
-
         let currentRating = 0;
 
-        // Open modal - FIXED: Use classList instead of style.display
+        // Modal Logic
         openBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 modal.classList.add('show');
                 bookingIdInput.value = this.getAttribute('data-booking-id');
-                currentRating = 0;
-                starsInput.value = '';
-                reviewInput.value = '';
-                highlightStars(-1);
-                ratingText.textContent = "Select a star";
-                ratingText.style.color = "#64748b";
+                currentRating = 0; starsInput.value = ''; reviewInput.value = '';
+                highlightStars(-1); ratingText.textContent = "Select a star";
                 submitBtn.style.display = 'none';
             });
         });
 
-        // Close modal - FIXED: Remove class instead of setting display
-        closeBtn.addEventListener('click', () => {
-            modal.classList.remove('show');
-        });
-        
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.classList.remove('show');
-            }
-        });
-
-        // ESC key to close modal
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && modal.classList.contains('show')) {
-                modal.classList.remove('show');
-            }
-        });
+        closeBtn.addEventListener('click', () => { modal.classList.remove('show'); });
+        window.addEventListener('click', (event) => { if (event.target === modal) modal.classList.remove('show'); });
 
         function highlightStars(index) {
-            stars.forEach((star, i) => {
-                star.classList.toggle('active', i <= index);
-            });
+            stars.forEach((star, i) => { star.classList.toggle('active', i <= index); });
         }
-
         stars.forEach((star, index) => {
-            star.addEventListener('mouseover', () => {
-                highlightStars(index);
-                ratingText.textContent = `${index + 1} Star${index + 1 === 1 ? '' : 's'}`;
-            });
-            
-            star.addEventListener('mouseleave', () => {
-                highlightStars(currentRating - 1);
-                ratingText.textContent = currentRating > 0 ? 
-                    `You selected ${currentRating} star${currentRating === 1 ? '' : 's'}` : 
-                    "Select a star";
-            });
-            
+            star.addEventListener('mouseover', () => { highlightStars(index); });
+            star.addEventListener('mouseleave', () => { highlightStars(currentRating - 1); });
             star.addEventListener('click', () => {
-                currentRating = index + 1;
-                starsInput.value = currentRating;
+                currentRating = index + 1; starsInput.value = currentRating;
                 ratingText.textContent = `You selected ${currentRating} star${currentRating === 1 ? '' : 's'}`;
                 submitBtn.style.display = 'inline-block';
             });
         });
 
-        // Form validation
-        const form = modal.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            if (!starsInput.value) {
-                e.preventDefault();
-                ratingText.textContent = "Please select a rating";
-                ratingText.style.color = "#ef4444";
-                return false;
-            }
-        });
+        // Alert Dismiss
+        if (alertArea) { setTimeout(() => { alertArea.style.display = 'none'; }, 5000); }
 
-        // Auto-hide alerts
-        if (alertArea) {
-            setTimeout(() => {
-                alertArea.style.display = 'none';
-            }, 5000);
+        // Check Empty States
+        checkEmptyStates();
+    });
+
+    function checkEmptyStates() {
+        // Active
+        const activeList = document.getElementById('active-list');
+        // Count dashboard-card divs inside active-list
+        const activeCount = activeList.querySelectorAll('.dashboard-card').length;
+        if (activeCount === 0) {
+            document.getElementById('no-active-msg').style.display = 'block';
         }
 
-        // Add animation to cards on load
-        const cards = document.querySelectorAll('.ride-card');
-        cards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            
-            setTimeout(() => {
-                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-    });
+        // History
+        const historyList = document.getElementById('history-list');
+        const historyCount = historyList.querySelectorAll('.history-card').length;
+        if (historyCount === 0) {
+            document.getElementById('no-history-msg').style.display = 'block';
+        }
+    }
 </script>
 {% endblock %}

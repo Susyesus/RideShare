@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
 from .forms import UserLoginForm
+from dashboard_app.utils import get_user_profile_picture
 
 def login(request):
     error = None
@@ -16,6 +17,11 @@ def login(request):
             user = authenticate(request, username=user_obj.username, password=password)
             if user is not None:
                 auth_login(request, user)
+                
+                # Fetch the picture ONCE during login and save it to the session
+                profile_pic = get_user_profile_picture(user)
+                if profile_pic:
+                    request.session['user_picture'] = profile_pic
 
                 # Redirect admins to /admin
                 if user.is_staff or user.is_superuser:
