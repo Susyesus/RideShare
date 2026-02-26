@@ -1,5 +1,4 @@
 from .models import Notification
-from .utils import get_user_profile_picture
 
 def notifications(request):
     if request.user.is_authenticated:
