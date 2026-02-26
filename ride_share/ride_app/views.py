@@ -20,14 +20,14 @@ def post_ride(request):
     """Render the post ride page"""
 
     # Prevent posting if user already has a booking
-    active_booking = Booking.objects.filter(
+    active_booking = Booking.objects.select_related('ride').filter(
         passenger=request.user,
         status__in=['accepted', 'pending','ongoing'],
         ride__status__in=['open', 'full']
     ).first()
 
     # Prevent posting if user already has a ride posted
-    active_ride = Ride.objects.filter(
+    active_ride = Ride.objects.select_related('driver').filter(
         driver=request.user, 
         status__in=['open', 'full', 'ongoing']
     ).exists()
@@ -62,7 +62,7 @@ def post_ride(request):
 @login_required
 def find_rides(request):
     """Render the find rides page"""
-    rides = Ride.objects.filter(status='open').order_by('start_date', 'start_time')
+    rides = Ride.objects.select_related('driver').filter(status='open').order_by('start_date', 'start_time')
 
     # Optional filter
     origin = request.GET.get('origin')
@@ -86,14 +86,14 @@ def book_ride(request, ride_id):
     ride = get_object_or_404(Ride, id=ride_id)
 
     # Prevent posting if user already has a booking
-    active_booking = Booking.objects.filter(
+    active_booking = Booking.objects.select_related('ride').filter(
         passenger=request.user,
         status__in=['accepted', 'pending','ongoing'],
         ride__status__in=['open', 'full']
     ).first()
 
     # Prevent posting if user already has a ride posted
-    active_ride = Ride.objects.filter(
+    active_ride = Ride.objects.select_related('driver').filter(
         driver=request.user, 
         status__in=['open', 'full', 'ongoing']
     ).exists()
@@ -242,8 +242,7 @@ def complete_ride(request, ride_id):
 @login_required
 def my_bookings(request):
     """Show user's bookings"""
-    bookings = Booking.objects.filter(passenger=request.user)\
-        .select_related('ride', 'ride__driver')\
+    bookings = Booking.objects.select_related('ride', 'ride__driver').filter(passenger=request.user)\
         .order_by('-id')
     return render(request, "dashboard_app/my_bookings.html", {'bookings': bookings})
 
@@ -253,16 +252,16 @@ def my_rides(request):
     
     # Prefetch 'bookings' and the 'passenger' inside them
     # Use 'bookings' (if related_name='bookings') or 'booking_set' (default)
-    rides = Ride.objects.filter(driver=request.user).prefetch_related(
+    rides = Ride.objects.select_related('driver').filter(driver=request.user).prefetch_related(
         'bookings__passenger'
     ).order_by('-id')
 
     # 2. Fetch the Reviews (Bookings that have a rating)
     # We filter by 'ride__driver' to get ratings for this user
-    reviews = Booking.objects.filter(
+    reviews = Booking.objects.select_related('passenger', 'ride').filter(
         ride__driver=request.user,
         rating_stars__isnull=False
-    ).select_related('passenger', 'ride').order_by('-rated_at')
+    ).order_by('-rated_at')
 
     # 3. Add both to context
     context = {

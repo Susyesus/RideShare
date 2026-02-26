@@ -11,7 +11,7 @@ from ride_app.models import Booking
 @never_cache
 @login_required
 def dashboard(request):
-    upcoming_rides = Ride.objects.filter(status='open').order_by('start_date', 'start_time')
+    upcoming_rides = Ride.objects.select_related('driver').filter(status='open').order_by('start_date', 'start_time')
     rides_count = upcoming_rides.count()
     kpis = {
         "completed_bookings_count": Booking.objects.filter(
