@@ -249,10 +249,13 @@ def my_bookings(request):
 
 @login_required
 def my_rides(request):
-    """Show user's posted rides and reviews received from passengers"""
+    """Show user's posted rides with passenger lists and reviews"""
     
-    # 1. Fetch the Driver's Rides
-    rides = Ride.objects.filter(driver=request.user).order_by('-id')
+    # Prefetch 'bookings' and the 'passenger' inside them
+    # Use 'bookings' (if related_name='bookings') or 'booking_set' (default)
+    rides = Ride.objects.filter(driver=request.user).prefetch_related(
+        'bookings__passenger'
+    ).order_by('-id')
 
     # 2. Fetch the Reviews (Bookings that have a rating)
     # We filter by 'ride__driver' to get ratings for this user
@@ -266,7 +269,7 @@ def my_rides(request):
         'rides': rides,
         'reviews': reviews
     }
-    
+
     return render(request, "dashboard_app/my_rides.html", context)
 
 @login_required
