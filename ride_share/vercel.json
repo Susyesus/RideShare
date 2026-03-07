@@ -1,14 +1,14 @@
 {
   "builds": [
     {
-      "src": "ride_share/ride_share/wsgi.py",
+      "src": "ride_share/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb"
       }
     },
     {
-      "src": "ride_share/build.sh",
+      "src": "build.sh",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "staticfiles"
@@ -22,7 +22,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "ride_share/ride_share/wsgi.py"
+      "dest": "ride_share/wsgi.py"
     }
   ]
 }
