@@ -20,7 +20,6 @@ multidict==6.7.0
 packaging==25.0
 postgrest==2.24.0
 propcache==0.4.1
-psycopg2==2.9.11
 psycopg2-binary==2.9.11
 pycparser==2.23
 pydantic==2.12.4
