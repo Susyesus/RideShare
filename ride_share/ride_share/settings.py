@@ -26,13 +26,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-p(6)9=fz(ad9wz2w-2huqgnty9a--63j+i87bxy=+yy)zc54vb'
+# Pull from environment, default to a random string if not found (keeps local dev easy)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-p(6)9=fz(ad9wz2w-2huqgnty9a--63j+i87bxy=+yy)zc54vb')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Only True if explicitly set in the environment, otherwise False for safety!
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ["rideshare-nxo3.onrender.com","127.0.0.1"]
+ALLOWED_HOSTS = ["rideshare-nxo3.onrender.com", "127.0.0.1", ".vercel.app"]
 
 
 # Application definition
@@ -93,8 +93,6 @@ WSGI_APPLICATION = 'ride_share.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('SUPABASE_DB_NAME', 'postgres'),
         'USER': os.environ.get('SUPABASE_DB_USER'),
@@ -102,8 +100,12 @@ DATABASES = {
         'HOST': os.environ.get('SUPABASE_DB_HOST'),
         'PORT': os.environ.get('SUPABASE_DB_PORT', '6543'),
         'OPTIONS': {
-            'sslmode': 'require', # CRITICAL for connecting from Render
-        }
+            'sslmode': 'require',
+            # REQUIRED for Supabase Transaction Pooler (port 6543)
+            'options': '-c pooler_routing_mode=transaction',
+        },
+        # THIS IS THE CRITICAL ADDITION:
+        'DISABLE_SERVER_SIDE_CURSORS': True, 
     }
 }
 
