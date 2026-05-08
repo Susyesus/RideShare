@@ -12,7 +12,8 @@ from register_app.models import EmailVerificationToken
 def send_verification_email(user):
     # Create or get a token
     token_obj, created = EmailVerificationToken.objects.get_or_create(user=user)
-    verification_link = f"https://rideshare-nxo3.onrender.com/accounts/verify/{token_obj.token}/"
+    site_url = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+    verification_link = f"{site_url}/accounts/verify/{token_obj.token}/"
 
     # Email content
     subject = "Verify your email"
